@@ -7,9 +7,14 @@
     <h2 style="font-size: 1.75rem; margin-bottom: 0.25rem;">HR Management Hub</h2>
     <p style="color: var(--text-secondary);">Oversee employees, recruitment AI matching, and operational workflows</p>
   </div>
-  <a href="{% url 'recruitment:cv_analysis' %}" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.65rem 1.25rem;">
-    <span>🤖</span> Launch AI CV Analysis
-  </a>
+  <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+    <a href="{% url 'assistant:chat' %}" class="btn btn-secondary" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.65rem 1.25rem; border: 1px solid rgba(52, 211, 153, 0.4); color: #34d399;">
+      <span>✨</span> HR AI Assistant
+    </a>
+    <a href="{% url 'recruitment:cv_analysis' %}" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.65rem 1.25rem;">
+      <span>🤖</span> Launch AI CV Analysis
+    </a>
+  </div>
 </div>
 
 

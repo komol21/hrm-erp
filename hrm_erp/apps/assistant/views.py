@@ -6,6 +6,7 @@ from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.conf import settings
 
+from apps.accounts.permissions import role_required
 from .models import ChatSession, ChatMessage
 from .services.gemini_service import generate_gemini_response
 
@@ -13,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
+@role_required('Admin', 'HR')
 def chat_page_view(request):
     """
     Main interactive HR AI Assistant page.
@@ -40,6 +42,7 @@ def chat_page_view(request):
 
 
 @login_required
+@role_required('Admin', 'HR')
 @require_POST
 def api_send_message(request):
     """
@@ -108,6 +111,7 @@ def api_send_message(request):
 
 
 @login_required
+@role_required('Admin', 'HR')
 @require_POST
 def api_clear_chat(request):
     """Clear conversation history for the current user."""

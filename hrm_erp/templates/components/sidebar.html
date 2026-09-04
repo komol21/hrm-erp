@@ -10,17 +10,17 @@
         <span>📊</span> Dashboard
       </a>
     </li>
-
-    <li>
-      <a href="{% url 'assistant:chat' %}" class="sidebar-link {% if request.resolver_match.namespace == 'assistant' %}active{% endif %}" style="position: relative;">
-        <span>✨</span> HR AI Assistant
-        <span class="badge" style="font-size: 0.65rem; background: rgba(16, 185, 129, 0.18); color: #34d399; margin-left: auto; padding: 0.15rem 0.45rem; border-radius: 999px;">AI</span>
-      </a>
-    </li>
     
     <!-- Admin & HR Only Sections -->
     {% if is_admin or is_hr %}
       <li class="sidebar-section-header" style="padding: 1rem 1rem 0.25rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">HR Management</li>
+      
+      <li>
+        <a href="{% url 'assistant:chat' %}" class="sidebar-link {% if request.resolver_match.namespace == 'assistant' %}active{% endif %}" style="position: relative;">
+          <span>✨</span> HR AI Assistant
+          <span class="badge" style="font-size: 0.65rem; background: rgba(16, 185, 129, 0.18); color: #34d399; margin-left: auto; padding: 0.15rem 0.45rem; border-radius: 999px;">AI</span>
+        </a>
+      </li>
       
       <li>
         <a href="{% url 'employees:employee_list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'employees' %}active{% endif %}">
