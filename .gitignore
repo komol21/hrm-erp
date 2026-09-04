@@ -4,6 +4,7 @@ venv/
 
 # Database
 db.sqlite3
+db.sqlite3-journal
 
 # Environment variables
 .env
@@ -18,12 +19,20 @@ staticfiles/
 __pycache__/
 *.pyc
 *.pyo
+*.py[cod]
+*$py.class
+*.so
 *.egg-info/
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Logs
+*.log
