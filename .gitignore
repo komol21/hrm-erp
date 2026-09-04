@@ -3,20 +3,20 @@
 venv/
 
 # Database
-db.sqlite3
-db.sqlite3-journal
+**/db.sqlite3
+**/db.sqlite3-journal
 
 # Environment variables
-.env
+**/.env
 
 # Media uploads
-media/
+**/media/
 
 # Collected static files
-staticfiles/
+**/staticfiles/
 
 # Python
-__pycache__/
+**/__pycache__/
 *.pyc
 *.pyo
 *.py[cod]
