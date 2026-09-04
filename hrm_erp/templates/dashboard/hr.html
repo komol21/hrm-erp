@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Welcome Header -->
+<div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <h2 style="font-size: 1.75rem; margin-bottom: 0.25rem;">HR Management Hub</h2>
+    <p style="color: var(--text-secondary);">Oversee employees, recruitment AI matching, and operational workflows</p>
+  </div>
+  <a href="{% url 'recruitment:cv_analysis' %}" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.65rem 1.25rem;">
+    <span>🤖</span> Launch AI CV Analysis
+  </a>
+</div>
+
+
+<!-- Stat Grid -->
+<div class="dashboard-grid">
+  <!-- Employees -->
+  <div class="glass-card stat-card">
+    <div class="stat-info">
+      <span class="stat-label">Active Staff</span>
+      <div class="stat-value">{{ total_employees }}</div>
+    </div>
+    <div class="stat-icon">👥</div>
+  </div>
+
+  <!-- Departments -->
+  <div class="glass-card stat-card">
+    <div class="stat-info">
+      <span class="stat-label">Total Departments</span>
+      <div class="stat-value">{{ total_departments }}</div>
+    </div>
+    <div class="stat-icon">🏢</div>
+  </div>
+
+  <!-- Pending Leave Requests -->
+  <div class="glass-card stat-card">
+    <div class="stat-info">
+      <span class="stat-label">Leaves to Review</span>
+      <div class="stat-value">{{ pending_leaves }}</div>
+    </div>
+    <div class="stat-icon">✉️</div>
+  </div>
+
+  <!-- Monthly Payroll Total -->
+  <div class="glass-card stat-card">
+    <div class="stat-info">
+      <span class="stat-label">Net Payroll (Month)</span>
+      <div class="stat-value" style="font-size: 1.5rem; line-height: 2rem;">৳{{ monthly_payroll_total|floatformat:2 }}</div>
+    </div>
+    <div class="stat-icon">💳</div>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+  <!-- Attendance Chart (Today) -->
+  <div class="glass-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <h3 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span>⏱️</span> Today's Attendance Overview
+      </h3>
+      <span class="pulse-badge">
+        <span class="pulse-dot"></span> Live
+      </span>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+      <!-- Present -->
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem;">
+          <span style="font-weight: 600;">Present</span>
+          <span id="overview-present" style="color: var(--success); font-weight: 700;">{{ today_present }}</span>
+        </div>
+      </div>
+
+      <!-- Late -->
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem;">
+          <span style="font-weight: 600;">Late Arrivals</span>
+          <span id="overview-late" style="color: var(--warning); font-weight: 700;">{{ today_late }}</span>
+        </div>
+      </div>
+
+      <!-- Absent -->
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem;">
+          <span style="font-weight: 600;">Absent</span>
+          <span id="overview-absent" style="color: var(--danger); font-weight: 700;">{{ today_absent }}</span>
+        </div>
+      </div>
+
+      <!-- Leave -->
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem;">
+          <span style="font-weight: 600;">On Leave</span>
+          <span id="overview-on-leave" style="color: var(--info); font-weight: 700;">{{ today_on_leave }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Employee Status Overview -->
+  <div class="glass-card">
+    <h3 style="margin-bottom: 1.25rem; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+      <span>👥</span> Staff Breakdown
+    </h3>
+    <ul style="list-style: none; display: flex; flex-direction: column; gap: 1rem;">
+      <li style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-glass);">
+        <span style="font-weight: 600; font-size: 0.9rem;">Active Staff</span>
+        <span class="badge badge-active">{{ active_employees }}</span>
+      </li>
+      <li style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-glass);">
+        <span style="font-weight: 600; font-size: 0.9rem;">Inactive</span>
+        <span class="badge badge-pending">{{ inactive_employees }}</span>
+      </li>
+      <li style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-weight: 600; font-size: 0.9rem;">Terminated</span>
+        <span class="badge badge-rejected">{{ terminated_employees }}</span>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- Dedicated Employee Leave Applications Section -->
+<div class="glass-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+    <div>
+      <h3 style="font-size: 1.15rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+        <span>✉️</span> Employee Leave Applications
+      </h3>
+      <p style="font-size: 0.8rem; color: var(--text-secondary);">Review and approve/reject employee leave requests</p>
+    </div>
+    <a href="{% url 'leave:request_list' %}" class="btn btn-secondary" style="font-size: 0.8rem;">View All Applications &rarr;</a>
+  </div>
+
+  {% if recent_leaves %}
+    <div class="table-container">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Employee Name</th>
+            <th>Leave Type</th>
+            <th>Leave Period</th>
+            <th>Duration</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for req in recent_leaves %}
+            <tr>
+              <td style="font-weight: 700;">{{ req.employee.full_name }}</td>
+              <td><span class="badge" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">{{ req.leave_type.name }}</span></td>
+              <td>{{ req.start_date }} to {{ req.end_date }}</td>
+              <td style="font-weight: 700; color: var(--accent-primary);">{{ req.total_days }} day(s)</td>
+              <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ req.reason }}</td>
+              <td><span class="badge badge-{{ req.status }}">{{ req.status|title }}</span></td>
+              <td>
+                <a href="{% url 'leave:request_review' req.id %}" class="btn btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+                  Approve / Reject
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    {% include 'components/empty_state.html' with message="No pending leave applications to review." %}
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function() {
+    async function updateRealtimeAttendance() {
+      try {
+        const response = await fetch("{% url 'dashboard:attendance_realtime_api' %}");
+        if (!response.ok) return;
+        const data = await response.json();
+
+        const updateElem = (id, val) => {
+          const el = document.getElementById(id);
+          if (el && el.textContent.trim() !== String(val)) {
+            el.textContent = val;
+            el.classList.remove('stat-num-flash');
+            void el.offsetWidth; // Trigger reflow
+            el.classList.add('stat-num-flash');
+          }
+        };
+
+        updateElem('overview-present', data.today_present);
+        updateElem('overview-late', data.today_late);
+        updateElem('overview-absent', data.today_absent);
+        updateElem('overview-on-leave', data.today_on_leave);
+      } catch (err) {
+        console.debug('Attendance real-time poll error:', err);
+      }
+    }
+
+    // Auto-poll every 5 seconds for live attendance changes
+    setInterval(updateRealtimeAttendance, 5000);
+  })();
+</script>
+{% endblock %}

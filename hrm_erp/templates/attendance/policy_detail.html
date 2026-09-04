@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 800px; margin: 0 auto;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 1rem;">
+    <div>
+      <h2 style="font-size: 1.35rem; margin-bottom: 0.25rem;">⏱️ {{ policy.title }}</h2>
+      <p style="font-size: 0.85rem; color: var(--text-secondary);">Official company working hours, late rules, and overtime threshold.</p>
+    </div>
+    
+    {% if is_hr_or_admin %}
+      <a href="{% url 'attendance:attendance_policy_edit' %}" class="btn btn-primary">⚙️ Edit Policy Rules</a>
+    {% else %}
+      <span class="badge badge-active">🔒 Read-Only Rules</span>
+    {% endif %}
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+    <div style="background: rgba(0,0,0,0.2); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-glass);">
+      <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Work Start Time</span>
+      <div style="font-size: 1.25rem; font-weight: 800; margin-top: 0.35rem; color: var(--accent-primary);">
+        {{ policy.work_start_time|time:"h:i A" }}
+      </div>
+    </div>
+
+    <div style="background: rgba(0,0,0,0.2); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-glass);">
+      <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Work End Time</span>
+      <div style="font-size: 1.25rem; font-weight: 800; margin-top: 0.35rem; color: var(--accent-primary);">
+        {{ policy.work_end_time|time:"h:i A" }}
+      </div>
+    </div>
+
+    <div style="background: rgba(0,0,0,0.2); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-glass);">
+      <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Grace Period</span>
+      <div style="font-size: 1.25rem; font-weight: 800; margin-top: 0.35rem; color: var(--warning);">
+        {{ policy.grace_period_minutes }} mins
+      </div>
+    </div>
+
+    <div style="background: rgba(0,0,0,0.2); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-glass);">
+      <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Standard Daily Workday</span>
+      <div style="font-size: 1.25rem; font-weight: 800; margin-top: 0.35rem; color: var(--success);">
+        {{ policy.standard_working_hours }} Hours
+      </div>
+    </div>
+
+    <div style="background: rgba(0,0,0,0.2); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-glass);">
+      <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Break Duration</span>
+      <div style="font-size: 1.25rem; font-weight: 800; margin-top: 0.35rem; color: var(--accent-primary);">
+        {{ policy.break_duration }} mins
+      </div>
+    </div>
+  </div>
+
+  <div style="background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-glass); margin-bottom: 1.5rem;">
+    <h3 style="font-size: 0.95rem; margin-bottom: 0.75rem; color: var(--text-secondary);">Rule Summaries</h3>
+    <ul style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem; color: var(--text-primary); padding-left: 1.25rem;">
+      <li>Check-in times after <strong>{{ policy.work_start_time|time:"h:i A" }}</strong> (beyond {{ policy.grace_period_minutes }} min grace period) will automatically be flagged as <strong>Late</strong>.</li>
+      <li>Overtime accrues for total daily hours exceeding <strong>{{ policy.overtime_threshold_hours }} hours</strong>.</li>
+      <li>Break duration of <strong>{{ policy.break_duration }} minutes</strong> is included in the workday.</li>
+      <li>Check-out before <strong>{{ policy.work_end_time|time:"h:i A" }}</strong> will be flagged as <strong>Early Leave</strong>.</li>
+      <li>Missing check-out will be flagged as <strong>Incomplete</strong>.</li>
+      <li>Location / IP validation check-in requirement: <strong>{% if policy.require_location %}Enabled{% else %}Disabled{% endif %}</strong>.</li>
+    </ul>
+  </div>
+
+  {% if policy.notes %}
+    <div style="border-top: 1px solid var(--border-glass); padding-top: 1rem; font-size: 0.85rem; color: var(--text-muted);">
+      <strong>Policy Notes:</strong> {{ policy.notes }}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

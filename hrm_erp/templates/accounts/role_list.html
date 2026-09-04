@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="glass-card">
+  <div style="display: flex; justify-content: right; margin-bottom: 1.5rem;">
+    <a href="{% url 'accounts:role_create' %}" class="btn btn-primary">+ Add New Role</a>
+  </div>
+
+  <div class="table-container">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Role Name</th>
+          <th>Description</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in roles %}
+          <tr>
+            <td style="font-weight: 600;">{{ r.name }}</td>
+            <td style="color: var(--text-secondary);">{{ r.description|default:"No description provided." }}</td>
+            <td>
+              <div style="display: flex; gap: 0.5rem;">
+                <a href="{% url 'accounts:role_edit' r.id %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">Edit</a>
+                <a href="{% url 'accounts:role_delete' r.id %}" class="btn btn-danger" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">Delete</a>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="3" style="text-align: center; color: var(--text-secondary); padding: 2rem;">No security roles defined.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

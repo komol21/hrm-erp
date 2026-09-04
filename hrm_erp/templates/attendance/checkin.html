@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 500px; margin: 2rem auto; text-align: center;">
+  <div style="font-size: 4rem; margin-bottom: 1.5rem; animation: pulse 2s infinite;">⏱️</div>
+  
+  {% if action == 'check_in' %}
+    <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Daily Shift Check In</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 2rem;">Confirm your check-in time for today: <strong>{{ today }}</strong></p>
+    
+    <form method="POST">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem; width: 100%;">
+        Confirm Clock In
+      </button>
+    </form>
+  {% else %}
+    <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Clock Out</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 2rem;">Are you ready to clock out of your shift today?</p>
+    
+    <div style="margin-bottom: 2rem; background: rgba(0,0,0,0.15); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-glass);">
+      <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">CLOCK IN TIME TODAY</span>
+      <div style="font-size: 1.25rem; font-weight: 700; margin-top: 0.25rem; font-family: monospace;">{{ existing.check_in|time:"h:i A" }}</div>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" style="padding: 1rem 2rem; font-size: 1.1rem; width: 100%;">
+        Confirm Clock Out
+      </button>
+    </form>
+  {% endif %}
+  
+  <div style="margin-top: 1.5rem;">
+    <a href="{% url 'attendance:my_attendance' %}" style="font-size: 0.9rem; color: var(--text-secondary); text-decoration: underline;">View my shift logs</a>
+  </div>
+</div>
+{% endblock %}

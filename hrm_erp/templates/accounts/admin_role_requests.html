@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Top Metrics Row -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+  <a href="?status=pending{% if search %}&search={{ search }}{% endif %}" style="text-decoration: none; color: inherit;">
+    <div class="glass-card stat-card" style="border-left: 4px solid #ffc107; {% if status_filter == 'pending' %}background: rgba(255, 193, 7, 0.08);{% endif %}">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Pending Review</span>
+          <h2 style="font-size: 1.75rem; margin: 0.25rem 0 0 0; color: #ffc107;">{{ counts.pending }}</h2>
+        </div>
+        <span style="font-size: 1.75rem;">⏳</span>
+      </div>
+    </div>
+  </a>
+
+  <a href="?status=approved{% if search %}&search={{ search }}{% endif %}" style="text-decoration: none; color: inherit;">
+    <div class="glass-card stat-card" style="border-left: 4px solid #28a745; {% if status_filter == 'approved' %}background: rgba(40, 167, 69, 0.08);{% endif %}">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Approved</span>
+          <h2 style="font-size: 1.75rem; margin: 0.25rem 0 0 0; color: #28a745;">{{ counts.approved }}</h2>
+        </div>
+        <span style="font-size: 1.75rem;">✅</span>
+      </div>
+    </div>
+  </a>
+
+  <a href="?status=rejected{% if search %}&search={{ search }}{% endif %}" style="text-decoration: none; color: inherit;">
+    <div class="glass-card stat-card" style="border-left: 4px solid #dc3545; {% if status_filter == 'rejected' %}background: rgba(220, 53, 69, 0.08);{% endif %}">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Rejected</span>
+          <h2 style="font-size: 1.75rem; margin: 0.25rem 0 0 0; color: #dc3545;">{{ counts.rejected }}</h2>
+        </div>
+        <span style="font-size: 1.75rem;">❌</span>
+      </div>
+    </div>
+  </a>
+
+  <a href="?status=all{% if search %}&search={{ search }}{% endif %}" style="text-decoration: none; color: inherit;">
+    <div class="glass-card stat-card" style="border-left: 4px solid var(--accent-primary); {% if status_filter == 'all' %}background: rgba(79, 172, 254, 0.08);{% endif %}">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Total Requests</span>
+          <h2 style="font-size: 1.75rem; margin: 0.25rem 0 0 0; color: var(--accent-primary);">{{ counts.all }}</h2>
+        </div>
+        <span style="font-size: 1.75rem;">🛡️</span>
+      </div>
+    </div>
+  </a>
+</div>
+
+<!-- Main Table Card -->
+<div class="glass-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h2 style="font-size: 1.3rem; margin-bottom: 0.2rem;">Employee Role Elevation Requests</h2>
+      <p style="font-size: 0.85rem; color: var(--text-secondary);">Verify and approve privilege requests for HR and Admin access.</p>
+    </div>
+
+    <!-- Search Box -->
+    <form method="GET" style="display: flex; gap: 0.5rem; max-width: 350px; width: 100%;">
+      <input type="hidden" name="status" value="{{ status_filter }}">
+      <input type="text" name="search" value="{{ search }}" class="form-input" placeholder="Search by username or name..." style="padding: 0.5rem 0.85rem; font-size: 0.85rem;">
+      <button type="submit" class="btn btn-secondary" style="padding: 0.5rem 0.85rem;">🔍</button>
+      {% if search %}
+        <a href="?status={{ status_filter }}" class="btn btn-secondary" style="padding: 0.5rem 0.85rem;" title="Clear Search">✕</a>
+      {% endif %}
+    </form>
+  </div>
+
+  {% if role_requests %}
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Requester / User</th>
+            <th>Current Role</th>
+            <th>Requested Privilege</th>
+            <th>Reason / Justification</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th style="text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for req in role_requests %}
+            <tr>
+              <td>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: 0.8rem;">
+                    {{ req.user.username|slice:":2"|upper }}
+                  </div>
+                  <div>
+                    <div style="font-weight: 600;">{{ req.user.get_full_name|default:req.user.username }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">@{{ req.user.username }} &bull; {{ req.user.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                {% for r in req.user.get_role_names %}
+                  <span class="badge badge-active" style="font-size: 0.7rem;">{{ r }}</span>
+                {% empty %}
+                  <span style="color: var(--text-muted); font-size: 0.8rem;">Employee</span>
+                {% endfor %}
+              </td>
+              <td>
+                <span class="badge" style="background: rgba(79, 172, 254, 0.15); color: var(--accent-secondary); border: 1px solid rgba(79, 172, 254, 0.3); font-weight: 700;">
+                  ⭐ {{ req.requested_role.name }}
+                </span>
+              </td>
+              <td style="max-width: 250px;">
+                <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem;" title="{{ req.reason }}">
+                  {{ req.reason }}
+                </div>
+              </td>
+              <td>
+                {% if req.status == 'pending' %}
+                  <span class="badge" style="background: rgba(255, 193, 7, 0.2); color: #ffc107; border: 1px solid rgba(255, 193, 7, 0.4);">Pending</span>
+                {% elif req.status == 'approved' %}
+                  <span class="badge" style="background: rgba(40, 167, 69, 0.2); color: #28a745; border: 1px solid rgba(40, 167, 69, 0.4);">Approved</span>
+                {% elif req.status == 'rejected' %}
+                  <span class="badge" style="background: rgba(220, 53, 69, 0.2); color: #dc3545; border: 1px solid rgba(220, 53, 69, 0.4);">Rejected</span>
+                {% endif %}
+              </td>
+              <td style="font-size: 0.8rem; color: var(--text-muted);">
+                {{ req.created_at|date:"M d, Y" }}
+              </td>
+              <td style="text-align: right;">
+                {% if req.status == 'pending' %}
+                  <a href="{% url 'accounts:admin_role_request_review' req.id %}" class="btn btn-primary" style="padding: 0.35rem 0.85rem; font-size: 0.8rem;">
+                    ⚖️ Review & Verify
+                  </a>
+                {% else %}
+                  <a href="{% url 'accounts:admin_role_request_review' req.id %}" class="btn btn-secondary" style="padding: 0.35rem 0.85rem; font-size: 0.8rem;">
+                    👁️ View Details
+                  </a>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if role_requests.has_other_pages %}
+      <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem;">
+        {% if role_requests.has_previous %}
+          <a href="?page={{ role_requests.previous_page_number }}&status={{ status_filter }}{% if search %}&search={{ search }}{% endif %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem;">&laquo; Previous</a>
+        {% endif %}
+        <span style="display: flex; align-items: center; padding: 0 0.75rem; font-size: 0.85rem; color: var(--text-secondary);">
+          Page {{ role_requests.number }} of {{ role_requests.paginator.num_pages }}
+        </span>
+        {% if role_requests.has_next %}
+          <a href="?page={{ role_requests.next_page_number }}&status={{ status_filter }}{% if search %}&search={{ search }}{% endif %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem;">Next &raquo;</a>
+        {% endif %}
+      </div>
+    {% endif %}
+
+  {% else %}
+    {% include 'components/empty_state.html' with message="No role requests match the selected criteria." %}
+  {% endif %}
+</div>
+{% endblock %}

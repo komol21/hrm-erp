@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Top Header actions -->
+<div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+  <a href="{% url 'organization:department_list' %}" class="btn btn-secondary">Departments</a>
+  <a href="{% url 'organization:designation_list' %}" class="btn btn-secondary">Designations</a>
+  <a href="{% url 'organization:branch_list' %}" class="btn btn-primary">Branches</a>
+</div>
+
+<div class="glass-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <h3 style="font-size: 1.25rem;">Branches</h3>
+    {% if is_admin or is_hr %}
+      <a href="{% url 'organization:branch_create' %}" class="btn btn-primary">+ Create Branch</a>
+    {% endif %}
+  </div>
+
+  <div class="table-container">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Branch Name</th>
+          <th>Address</th>
+          <th>Phone</th>
+          <th>Email</th>
+          {% if is_admin or is_hr %}
+            <th>Actions</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in branches %}
+          <tr>
+            <td style="font-weight: 600;">{{ b.name }}</td>
+            <td style="color: var(--text-secondary);">{{ b.address|default:"--" }}</td>
+            <td>{{ b.phone|default:"--" }}</td>
+            <td>{{ b.email|default:"--" }}</td>
+            {% if is_admin or is_hr %}
+              <td>
+                <div style="display: flex; gap: 0.5rem;">
+                  <a href="{% url 'organization:branch_edit' b.id %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">Edit</a>
+                  <a href="{% url 'organization:branch_delete' b.id %}" class="btn btn-danger" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">Delete</a>
+                </div>
+              </td>
+            {% endif %}
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="{% if is_admin or is_hr %}5{% else %}4{% endif %}" style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+              No branches registered.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

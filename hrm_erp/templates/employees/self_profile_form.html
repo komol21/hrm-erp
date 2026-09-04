@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 800px; margin: 0 auto;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 1rem;">
+    <div>
+      <h2 style="font-size: 1.35rem; margin-bottom: 0.25rem;">✏️ Edit Personal Profile</h2>
+      <p style="font-size: 0.85rem; color: var(--text-secondary);">Update your personal contact details and photo.</p>
+    </div>
+    <span class="badge badge-active">Employee Self Service</span>
+  </div>
+
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {% if form.errors %}
+      <div class="message-alert message-error" style="margin-bottom: 1.5rem; padding: 0.85rem 1.25rem; border-radius: var(--radius-sm); background: rgba(255, 75, 75, 0.1); border: 1px solid rgba(255, 75, 75, 0.3); color: #ff6b6b;">
+        <strong>⚠️ Please fix the following errors:</strong>
+        <ul style="margin: 0.4rem 0 0 1.25rem; font-size: 0.85rem;">
+          {% for field in form %}
+            {% for error in field.errors %}
+              <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <!-- SECTION 1: EMPLOYEE EDITABLE PERSONAL INFORMATION -->
+    <div style="margin-bottom: 2rem;">
+      <h3 style="font-size: 1rem; color: var(--accent-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span>👤</span> Basic Personal Information <span style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted);">(Editable by You)</span>
+      </h3>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label for="id_first_name" class="form-label">First Name</label>
+          {{ form.first_name }}
+          {{ form.first_name.errors }}
+        </div>
+        <div class="form-group">
+          <label for="id_last_name" class="form-label">Last Name</label>
+          {{ form.last_name }}
+          {{ form.last_name.errors }}
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+        <div class="form-group">
+          <label for="id_phone" class="form-label">Phone Number</label>
+          {{ form.phone }}
+          {{ form.phone.errors }}
+        </div>
+        <div class="form-group">
+          <label for="id_date_of_birth" class="form-label">Date of Birth</label>
+          {{ form.date_of_birth }}
+          {{ form.date_of_birth.errors }}
+        </div>
+        <div class="form-group">
+          <label for="id_gender" class="form-label">Gender</label>
+          {{ form.gender }}
+          {{ form.gender.errors }}
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 1rem;">
+        <label for="id_address" class="form-label">Residential Address</label>
+        {{ form.address }}
+        {{ form.address.errors }}
+      </div>
+
+      <div class="form-group" style="margin-top: 1rem;">
+        <label for="id_photo" class="form-label">Profile Photo</label>
+        {{ form.photo }}
+        {{ form.photo.errors }}
+        <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">Accepted formats: JPEG, PNG, WebP (Max 2MB).</span>
+      </div>
+    </div>
+
+    <!-- SECTION 2: READ-ONLY ACCOUNT & EMAIL INFORMATION -->
+    <div style="margin-bottom: 2rem; background: rgba(0,0,0,0.15); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-glass);">
+      <h3 style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span>🔒</span> Registered Email Address <span class="badge" style="background: rgba(255,255,255,0.08); font-size: 0.65rem;">Read-Only</span>
+      </h3>
+      <div class="form-group" style="margin-bottom: 0;">
+        <input type="email" value="{{ employee.email }}" readonly class="form-input" style="background: rgba(0,0,0,0.2); opacity: 0.8; cursor: not-allowed;">
+        <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; display: block;">Email addresses are locked for security and cannot be modified after account creation.</span>
+      </div>
+    </div>
+
+    <!-- SECTION 3: READ-ONLY OFFICIAL HR-MANAGED INFORMATION -->
+    <div style="margin-bottom: 2rem; background: rgba(79, 172, 254, 0.05); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid rgba(79, 172, 254, 0.2);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="font-size: 0.95rem; color: var(--accent-secondary); display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+          <span>🛡️</span> Official Employment Details
+        </h3>
+        <span class="badge" style="background: rgba(79, 172, 254, 0.15); color: var(--accent-secondary); font-size: 0.7rem; border: 1px solid rgba(79, 172, 254, 0.3);">
+          🔒 HR/Admin Managed
+        </span>
+      </div>
+      
+      <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Official employment records are managed exclusively by HR Administrators. Employees cannot directly alter official status or compensation details.
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; font-size: 0.85rem;">
+        <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: var(--radius-xs);">
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Employee ID</span>
+          <div style="font-weight: 700; margin-top: 0.2rem;">#{{ employee.id }}</div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: var(--radius-xs);">
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Department</span>
+          <div style="font-weight: 700; margin-top: 0.2rem;">{{ employee.department.name|default:"Unassigned" }}</div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: var(--radius-xs);">
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Designation</span>
+          <div style="font-weight: 700; margin-top: 0.2rem;">{{ employee.designation.title|default:"Unassigned" }}</div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: var(--radius-xs);">
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Basic Salary</span>
+          <div style="font-weight: 700; margin-top: 0.2rem; color: var(--accent-primary);">৳{{ employee.basic_salary|floatformat:2 }}</div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: var(--radius-xs);">
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Joining Date</span>
+          <div style="font-weight: 700; margin-top: 0.2rem;">{{ employee.hire_date }}</div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: var(--radius-xs);">
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Employment Status</span>
+          <div style="margin-top: 0.2rem;">
+            <span class="badge badge-{{ employee.status }}">{{ employee.status|title }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORM BUTTONS -->
+    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+      <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+      <a href="{% url 'employees:my_profile' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

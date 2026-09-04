@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Welcome Header -->
+<div style="margin-bottom: 2rem;">
+  <h2 style="font-size: 1.75rem; margin-bottom: 0.25rem;">System Overview</h2>
+  <p style="color: var(--text-secondary);">Real-time metrics and administration controls</p>
+</div>
+
+<!-- Stat Grid -->
+<div class="dashboard-grid">
+  <!-- Employees -->
+  <div class="glass-card stat-card">
+    <div class="stat-info">
+      <span class="stat-label">Active Employees</span>
+      <div class="stat-value">{{ total_employees }}</div>
+    </div>
+    <div class="stat-icon">👥</div>
+  </div>
+
+  <!-- Departments -->
+  <div class="glass-card stat-card">
+    <div class="stat-info">
+      <span class="stat-label">Departments</span>
+      <div class="stat-value">{{ total_departments }}</div>
+    </div>
+    <div class="stat-icon">🏢</div>
+  </div>
+
+  <!-- Branches -->
+  <div class="glass-card stat-card">
+    <div class="stat-info">
+      <span class="stat-label">Branches</span>
+      <div class="stat-value">{{ total_branches }}</div>
+    </div>
+    <div class="stat-icon">📍</div>
+  </div>
+
+  <!-- Monthly Payroll -->
+  <div class="glass-card stat-card">
+    <div class="stat-info">
+      <span class="stat-label">Payroll this Month</span>
+      <div class="stat-value" style="font-size: 1.5rem; line-height: 2rem;">৳{{ monthly_payroll_total|floatformat:2 }}</div>
+    </div>
+    <div class="stat-icon">💳</div>
+  </div>
+</div>
+
+<!-- Detailed Metrics -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+  <!-- Attendance Chart (Today) -->
+  <div class="glass-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <h3 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span>⏱️</span> Today's Attendance Summary
+      </h3>
+      <span class="pulse-badge">
+        <span class="pulse-dot"></span> Live
+      </span>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+      <!-- Present -->
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem;">
+          <span style="font-weight: 600;">Present</span>
+          <span id="overview-present" style="color: var(--success); font-weight: 700;">{{ today_present }}</span>
+        </div>
+        <div style="height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;">
+          <div id="bar-present" style="height: 100%; background: var(--success); transition: width 0.4s ease; width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- Late -->
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem;">
+          <span style="font-weight: 600;">Late Arrivals</span>
+          <span id="overview-late" style="color: var(--warning); font-weight: 700;">{{ today_late }}</span>
+        </div>
+        <div style="height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;">
+          <div id="bar-late" style="height: 100%; background: var(--warning); transition: width 0.4s ease; width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- Absent -->
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem;">
+          <span style="font-weight: 600;">Absent</span>
+          <span id="overview-absent" style="color: var(--danger); font-weight: 700;">{{ today_absent }}</span>
+        </div>
+        <div style="height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;">
+          <div id="bar-absent" style="height: 100%; background: var(--danger); transition: width 0.4s ease; width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- Leave -->
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem;">
+          <span style="font-weight: 600;">On Leave</span>
+          <span id="overview-on-leave" style="color: var(--info); font-weight: 700;">{{ today_on_leave }}</span>
+        </div>
+        <div style="height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;">
+          <div id="bar-on-leave" style="height: 100%; background: var(--info); transition: width 0.4s ease; width: 0%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending Tasks -->
+  <div class="glass-card">
+    <h3 style="margin-bottom: 1.25rem; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+      <span>🔔</span> Action Required
+    </h3>
+    <ul style="list-style: none; display: flex; flex-direction: column; gap: 1rem;">
+      <li style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-glass);">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span style="font-size: 1.25rem;">✉️</span>
+          <div>
+            <div style="font-weight: 600; font-size: 0.9rem;">Leave Requests</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Requires HR/Admin review</div>
+          </div>
+        </div>
+        {% if pending_leaves > 0 %}
+          <span class="badge badge-pending">{{ pending_leaves }} Pending</span>
+        {% else %}
+          <span class="badge badge-active">All Clear</span>
+        {% endif %}
+      </li>
+      <li style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span style="font-size: 1.25rem;">💳</span>
+          <div>
+            <div style="font-weight: 600; font-size: 0.9rem;">Unprocessed Payroll</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Outstanding payments</div>
+          </div>
+        </div>
+        {% if pending_payrolls > 0 %}
+          <span class="badge badge-pending">{{ pending_payrolls }} Pending</span>
+        {% else %}
+          <span class="badge badge-active">All Paid</span>
+        {% endif %}
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- Lists Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
+  <!-- Recent Leaves -->
+  <div class="glass-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 style="font-size: 1.1rem;">Recent Leaves</h3>
+      <a href="{% url 'leave:request_list' %}" style="font-size: 0.8rem; color: var(--accent-primary); font-weight: 600;">View All &rarr;</a>
+    </div>
+    {% if recent_leaves %}
+      <div class="table-container">
+        <table class="custom-table" style="background: none;">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Type</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for req in recent_leaves %}
+              <tr>
+                <td style="font-weight: 600;">{{ req.employee.full_name }}</td>
+                <td>{{ req.leave_type.name }}</td>
+                <td><span class="badge badge-{{ req.status }}">{{ req.status }}</span></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      {% include 'components/empty_state.html' with message="No leave applications yet." %}
+    {% endif %}
+  </div>
+
+  <!-- Department Distribution -->
+  <div class="glass-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 style="font-size: 1.1rem;">Department Allocation</h3>
+      <a href="{% url 'organization:department_list' %}" style="font-size: 0.8rem; color: var(--accent-primary); font-weight: 600;">Manage Departments &rarr;</a>
+    </div>
+    {% if dept_distribution %}
+      <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+        {% for dept in dept_distribution %}
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.25rem;">
+              <span style="font-weight: 600;">{{ dept.name }}</span>
+              <span style="color: var(--text-secondary);">{{ dept.emp_count }} employee(s)</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      {% include 'components/empty_state.html' with message="No departments registered." %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function() {
+    async function updateRealtimeAttendance() {
+      try {
+        const response = await fetch("{% url 'dashboard:attendance_realtime_api' %}");
+        if (!response.ok) return;
+        const data = await response.json();
+
+        const updateElem = (id, val) => {
+          const el = document.getElementById(id);
+          if (el && el.textContent.trim() !== String(val)) {
+            el.textContent = val;
+            el.classList.remove('stat-num-flash');
+            void el.offsetWidth;
+            el.classList.add('stat-num-flash');
+          }
+        };
+
+        updateElem('overview-present', data.today_present);
+        updateElem('overview-late', data.today_late);
+        updateElem('overview-absent', data.today_absent);
+        updateElem('overview-on-leave', data.today_on_leave);
+
+        const total = data.total_active || 1;
+        const setBarWidth = (barId, val) => {
+          const bar = document.getElementById(barId);
+          if (bar) {
+            const pct = Math.min(100, Math.round((val / total) * 100));
+            bar.style.width = pct + '%';
+          }
+        };
+
+        setBarWidth('bar-present', data.today_present);
+        setBarWidth('bar-late', data.today_late);
+        setBarWidth('bar-absent', data.today_absent);
+        setBarWidth('bar-on-leave', data.today_on_leave);
+      } catch (err) {
+        console.debug('Attendance real-time poll error:', err);
+      }
+    }
+
+    // Initial bar animation
+    updateRealtimeAttendance();
+
+    // Auto-poll every 5 seconds for live attendance changes
+    setInterval(updateRealtimeAttendance, 5000);
+  })();
+</script>
+{% endblock %}

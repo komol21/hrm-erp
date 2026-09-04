@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <h2 style="font-size: 1.5rem; margin-bottom: 0.25rem;">📜 AI CV Analysis History</h2>
+    <p style="color: var(--text-secondary); font-size: 0.88rem;">Review and compare previous candidate evaluation records</p>
+  </div>
+  <a href="{% url 'recruitment:cv_analysis' %}" class="btn btn-primary">
+    + New CV Analysis
+  </a>
+</div>
+
+<!-- Filters -->
+<div class="glass-card" style="margin-bottom: 1.25rem; padding: 1rem 1.25rem;">
+  <form method="GET" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 220px;">
+      <select name="vacancy" class="form-input" style="padding: 0.5rem 0.85rem; font-size: 0.85rem;" onchange="this.form.submit()">
+        <option value="">-- Filter by Job Vacancy --</option>
+        {% for v in vacancies %}
+          <option value="{{ v.id }}" {% if vacancy_filter == v.id|stringformat:"s" %}selected{% endif %}>
+            {{ v.title }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="width: 200px;">
+      <select name="recommendation" class="form-input" style="padding: 0.5rem 0.85rem; font-size: 0.85rem;" onchange="this.form.submit()">
+        <option value="">-- Recommendation --</option>
+        <option value="Strong Match" {% if rec_filter == 'Strong Match' %}selected{% endif %}>Strong Match</option>
+        <option value="Moderate Match" {% if rec_filter == 'Moderate Match' %}selected{% endif %}>Moderate Match</option>
+        <option value="Weak Match" {% if rec_filter == 'Weak Match' %}selected{% endif %}>Weak Match</option>
+      </select>
+    </div>
+
+    {% if vacancy_filter or rec_filter %}
+      <a href="{% url 'recruitment:analysis_history' %}" class="btn btn-secondary" style="padding: 0.5rem 0.85rem; font-size: 0.85rem;">
+        ✕ Clear Filters
+      </a>
+    {% endif %}
+  </form>
+</div>
+
+<!-- Table Card -->
+<div class="glass-card">
+  {% if analyses %}
+    <div class="table-container">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Candidate / File</th>
+            <th>Target Vacancy</th>
+            <th>Match Score</th>
+            <th>Recommendation</th>
+            <th>Experience</th>
+            <th>Evaluation Date</th>
+            <th style="text-align: right;">Report</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in analyses %}
+            <tr>
+              <td>
+                <div style="font-weight: 700;">{{ a.candidate_cv.candidate.name|default:"Applicant" }}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">{{ a.candidate_cv.file_name }}</div>
+              </td>
+              <td>
+                <strong>{{ a.candidate_cv.job_vacancy.title }}</strong>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">{{ a.candidate_cv.job_vacancy.department.name|default:"General" }}</div>
+              </td>
+              <td>
+                <div style="font-size: 1.15rem; font-weight: 800; color: {% if a.match_score >= 75 %}#34d399{% elif a.match_score >= 50 %}#fbbf24{% else %}#f87171{% endif %};">
+                  {{ a.match_score }}%
+                </div>
+              </td>
+              <td>
+                <span class="badge {% if a.match_score >= 75 %}badge-active{% elif a.match_score >= 50 %}{% else %}badge-rejected{% endif %}" style="font-size: 0.75rem; font-weight: 700;">
+                  {{ a.recommendation }}
+                </span>
+              </td>
+              <td style="font-size: 0.85rem;">
+                {{ a.experience_relevant_years }} yrs
+                {% if a.experience_meets_requirement %}
+                  <span style="color: #34d399;" title="Meets vacancy requirement">✓</span>
+                {% else %}
+                  <span style="color: #f87171;" title="Below vacancy requirement">✗</span>
+                {% endif %}
+              </td>
+              <td style="font-size: 0.8rem; color: var(--text-muted);">
+                {{ a.created_at|date:"M d, Y" }}
+              </td>
+              <td style="text-align: right;">
+                <a href="{% url 'recruitment:analysis_detail' a.id %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+                  👁️ View Report
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if analyses.has_other_pages %}
+      <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem;">
+        {% if analyses.has_previous %}
+          <a href="?page={{ analyses.previous_page_number }}{% if vacancy_filter %}&vacancy={{ vacancy_filter }}{% endif %}{% if rec_filter %}&recommendation={{ rec_filter }}{% endif %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem;">&laquo; Previous</a>
+        {% endif %}
+        <span style="display: flex; align-items: center; font-size: 0.85rem; color: var(--text-secondary);">
+          Page {{ analyses.number }} of {{ analyses.paginator.num_pages }}
+        </span>
+        {% if analyses.has_next %}
+          <a href="?page={{ analyses.next_page_number }}{% if vacancy_filter %}&vacancy={{ vacancy_filter }}{% endif %}{% if rec_filter %}&recommendation={{ rec_filter }}{% endif %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem;">Next &raquo;</a>
+        {% endif %}
+      </div>
+    {% endif %}
+
+  {% else %}
+    {% include 'components/empty_state.html' with message="No CV analysis records match the selected filters." %}
+  {% endif %}
+</div>
+{% endblock %}

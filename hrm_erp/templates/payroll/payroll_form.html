@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 600px; margin: 0 auto;">
+  <!-- Selected Employee Name Badge -->
+  <div id="selected-employee-preview" style="display: none; padding: 0.75rem 1rem; background: rgba(0, 242, 254, 0.1); border: 1px solid var(--accent-primary); border-radius: var(--radius-sm); margin-bottom: 1.5rem; font-size: 0.9rem;">
+    <span>Generating Payslip for: </span>
+    <strong id="selected-emp-name" style="color: var(--accent-primary); font-size: 1rem;"></strong>
+  </div>
+
+  <form method="POST">
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label class="form-label">Target Employee</label>
+      {{ form.employee }}
+      {{ form.employee.errors }}
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div class="form-group">
+        <label class="form-label">Month (format YYYY-MM)</label>
+        {{ form.month }}
+        {{ form.month.errors }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Basic Salary</label>
+        {{ form.basic_salary }}
+        {{ form.basic_salary.errors }}
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div class="form-group">
+        <label class="form-label">Allowances</label>
+        {{ form.allowances }}
+        {{ form.allowances.errors }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Deductions</label>
+        {{ form.deductions }}
+        {{ form.deductions.errors }}
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div class="form-group">
+        <label class="form-label">Payment Status</label>
+        {{ form.payment_status }}
+        {{ form.payment_status.errors }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Payment Date</label>
+        {{ form.payment_date }}
+        {{ form.payment_date.errors }}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Notes / Remarks</label>
+      {{ form.notes }}
+      {{ form.notes.errors }}
+    </div>
+
+    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+      <button type="submit" class="btn btn-primary">Generate Payslip</button>
+      <a href="{% url 'payroll:payroll_list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<!-- Script to display selected employee name badge dynamically -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const empSelect = document.getElementById('id_employee');
+    const previewBox = document.getElementById('selected-employee-preview');
+    const nameLabel = document.getElementById('selected-emp-name');
+    
+    function updatePreview() {
+      if (empSelect && empSelect.selectedIndex > 0) {
+        const selectedText = empSelect.options[empSelect.selectedIndex].text;
+        if (selectedText && selectedText !== '---------') {
+          nameLabel.textContent = selectedText;
+          previewBox.style.display = 'block';
+          return;
+        }
+      }
+      previewBox.style.display = 'none';
+    }
+
+    if (empSelect) {
+      empSelect.addEventListener('change', updatePreview);
+      updatePreview();
+    }
+  });
+</script>
+{% endblock %}

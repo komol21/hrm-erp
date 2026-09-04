@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: 1fr 1.25fr; gap: 1.5rem; align-items: start;">
+  <!-- Left: Elevation Request Form -->
+  <div class="glass-card">
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 0.75rem;">
+      <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(79, 172, 254, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+        🛡️
+      </div>
+      <div>
+        <h2 style="font-size: 1.2rem; margin-bottom: 0.15rem;">Request Role Privilege</h2>
+        <p style="font-size: 0.8rem; color: var(--text-secondary);">Request elevated HR or Admin system access.</p>
+      </div>
+    </div>
+
+    <!-- Security Info Banner -->
+    <div style="background: rgba(0, 242, 254, 0.05); border: 1px solid rgba(0, 242, 254, 0.2); padding: 0.85rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4;">
+      <strong style="color: var(--accent-primary); display: block; margin-bottom: 0.25rem;">ℹ️ Role-Based Verification</strong>
+      For security, privileged roles (HR and Admin) cannot be granted automatically. An existing Administrator will review and verify your request before upgrading your permissions.
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+
+      {% if form.errors %}
+        <div class="message-alert message-error" style="margin-bottom: 1rem; padding: 0.75rem 1rem; font-size: 0.85rem;">
+          <strong>Please fix the following:</strong>
+          <ul style="margin: 0.25rem 0 0 1rem;">
+            {% for field in form %}
+              {% for error in field.errors %}
+                <li>{{ field.label }}: {{ error }}</li>
+              {% endfor %}
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      <div class="form-group">
+        <label for="id_requested_role" class="form-label">Desired Role Privilege</label>
+        {{ form.requested_role }}
+        {% if form.requested_role.errors %}
+          <div style="color: var(--danger); font-size: 0.8rem; margin-top: 0.25rem;">{{ form.requested_role.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label for="id_reason" class="form-label">Business Justification / Reason</label>
+        {{ form.reason }}
+        <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">{{ form.reason.help_text }}</span>
+        {% if form.reason.errors %}
+          <div style="color: var(--danger); font-size: 0.8rem; margin-top: 0.25rem;">{{ form.reason.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+        <span>🚀</span> Submit Elevation Request
+      </button>
+    </form>
+  </div>
+
+  <!-- Right: Request History -->
+  <div class="glass-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 0.75rem;">
+      <div>
+        <h3 style="font-size: 1.15rem; margin-bottom: 0.15rem;">Your Request History</h3>
+        <p style="font-size: 0.8rem; color: var(--text-secondary);">Real-time status of your role elevation requests.</p>
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">
+        Current Role: <strong style="color: var(--accent-primary);">{% for r in request.user.get_role_names %}{{ r }}{% if not forloop.last %}, {% endif %}{% empty %}Employee{% endfor %}</strong>
+      </div>
+    </div>
+
+    {% if user_requests %}
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        {% for req in user_requests %}
+          <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-glass); border-radius: var(--radius-sm); padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-weight: 700; font-size: 0.95rem;">Requested: {{ req.requested_role.name }} Role</span>
+              </div>
+              <div>
+                {% if req.status == 'pending' %}
+                  <span class="badge" style="background: rgba(255, 193, 7, 0.2); color: #ffc107; border: 1px solid rgba(255, 193, 7, 0.4);">⏳ Pending Admin Review</span>
+                {% elif req.status == 'approved' %}
+                  <span class="badge" style="background: rgba(40, 167, 69, 0.2); color: #28a745; border: 1px solid rgba(40, 167, 69, 0.4);">✅ Approved & Promoted</span>
+                {% elif req.status == 'rejected' %}
+                  <span class="badge" style="background: rgba(220, 53, 69, 0.2); color: #dc3545; border: 1px solid rgba(220, 53, 69, 0.4);">❌ Rejected</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div style="font-size: 0.82rem; color: var(--text-secondary); background: rgba(255,255,255,0.02); padding: 0.5rem 0.75rem; border-radius: var(--radius-xs);">
+              <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600; display: block; margin-bottom: 0.15rem;">JUSTIFICATION:</span>
+              {{ req.reason }}
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem; margin-top: 0.25rem;">
+              <span>Submitted on: {{ req.created_at|date:"M d, Y H:i" }}</span>
+              {% if req.reviewed_by %}
+                <span>Reviewed by: <strong>{{ req.reviewed_by.username }}</strong> on {{ req.reviewed_at|date:"M d, Y" }}</span>
+              {% endif %}
+            </div>
+
+            {% if req.admin_remarks %}
+              <div style="font-size: 0.8rem; color: var(--text-secondary); background: rgba(79, 172, 254, 0.05); border-left: 3px solid var(--accent-secondary); padding: 0.4rem 0.75rem; border-radius: 0 var(--radius-xs) var(--radius-xs) 0;">
+                <strong style="color: var(--accent-secondary); font-size: 0.75rem;">ADMIN REMARKS:</strong> {{ req.admin_remarks }}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      {% include 'components/empty_state.html' with message="You haven't submitted any role elevation requests yet." %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

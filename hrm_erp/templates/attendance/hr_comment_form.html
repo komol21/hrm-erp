@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 600px; margin: 0 auto;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 1rem;">
+    <div>
+      <h2 style="font-size: 1.35rem; margin-bottom: 0.25rem;">💬 HR Comment</h2>
+      <p style="font-size: 0.85rem; color: var(--text-secondary);">Add or update a remark for this attendance record.</p>
+    </div>
+    <span class="badge badge-active">HR / Admin</span>
+  </div>
+
+  <!-- Record Context -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+    <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-glass);">
+      <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">EMPLOYEE</span>
+      <div style="font-size: 1rem; font-weight: 700; margin-top: 0.25rem;">{{ record.employee.full_name }}</div>
+    </div>
+    <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-glass);">
+      <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">DATE</span>
+      <div style="font-size: 1rem; font-weight: 700; margin-top: 0.25rem;">{{ record.date }}</div>
+    </div>
+    <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-glass);">
+      <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">CHECK IN</span>
+      <div style="font-size: 1rem; font-weight: 700; margin-top: 0.25rem; font-family: monospace;">{{ record.check_in|time:"h:i A"|default:"--" }}</div>
+    </div>
+    <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-glass);">
+      <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">CHECK OUT</span>
+      <div style="font-size: 1rem; font-weight: 700; margin-top: 0.25rem; font-family: monospace;">{{ record.check_out|time:"h:i A"|default:"--" }}</div>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem;">
+    <span class="badge badge-{{ record.status }}">{{ record.get_status_display }}</span>
+    {% if record.working_hours %}
+      <span style="font-size: 0.85rem; color: var(--text-secondary);">⏳ {{ record.working_hours }}h worked</span>
+    {% endif %}
+    {% if record.late_minutes > 0 %}
+      <span style="font-size: 0.85rem; color: var(--warning);">⚠️ {{ record.late_minutes }} min late</span>
+    {% endif %}
+  </div>
+
+  <form method="POST">
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label for="id_hr_comment" class="form-label">HR Comment / Remark</label>
+      {{ form.hr_comment }}
+      {{ form.hr_comment.errors }}
+      <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">
+        This comment is visible to the employee but they cannot edit it.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+      <button type="submit" class="btn btn-primary">Save Comment</button>
+      <a href="{% url 'attendance:attendance_list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

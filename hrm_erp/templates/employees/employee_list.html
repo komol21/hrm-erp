@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="glass-card" style="margin-bottom: 2rem;">
+  <!-- Filters Form -->
+  <form method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
+    <div class="form-group" style="margin-bottom: 0;">
+      <label class="form-label">Search</label>
+      <input type="text" name="search" class="form-input" placeholder="Name or email..." value="{{ search }}">
+    </div>
+    
+    <div class="form-group" style="margin-bottom: 0;">
+      <label class="form-label">Department</label>
+      <select name="department" class="form-input">
+        <option value="">-- All Departments --</option>
+        {% for d in departments %}
+          <option value="{{ d.id }}" {% if selected_department == d.id|stringformat:"i" %}selected{% endif %}>{{ d.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group" style="margin-bottom: 0;">
+      <label class="form-label">Branch</label>
+      <select name="branch" class="form-input">
+        <option value="">-- All Branches --</option>
+        {% for b in branches %}
+          <option value="{{ b.id }}" {% if selected_branch == b.id|stringformat:"i" %}selected{% endif %}>{{ b.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group" style="margin-bottom: 0;">
+      <label class="form-label">Status</label>
+      <select name="status" class="form-input">
+        <option value="">-- All Statuses --</option>
+        {% for s_val, s_lbl in status_choices %}
+          <option value="{{ s_val }}" {% if selected_status == s_val %}selected{% endif %}>{{ s_lbl }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="display: flex; gap: 0.5rem;">
+      <button type="submit" class="btn btn-primary" style="flex: 1;">Filter</button>
+      <a href="{% url 'employees:employee_list' %}" class="btn btn-secondary" style="flex: 1;">Reset</a>
+    </div>
+  </form>
+</div>
+
+<div class="glass-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <h3 style="font-size: 1.25rem;">Staff Directory</h3>
+    {% if is_admin or is_hr %}
+      <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+        <a href="{% url 'employees:employee_bulk_import' %}" class="btn btn-secondary">📥 Import CSV</a>
+        <a href="{% url 'employees:employee_create' %}" class="btn btn-primary">+ Add Employee</a>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if employees %}
+    <div class="table-container">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Photo</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Department</th>
+            <th>Designation</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for emp in employees %}
+            <tr>
+              <td>
+                {% if emp.photo %}
+                  <img src="{{ emp.photo.url }}" alt="{{ emp.full_name }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-glass);">
+                {% else %}
+                  <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: 0.85rem;">
+                    {{ emp.first_name|slice:":1" }}{{ emp.last_name|slice:":1" }}
+                  </div>
+                {% endif %}
+              </td>
+              <td style="font-weight: 600;">
+                <a href="{% url 'employees:employee_detail' emp.id %}" style="color: var(--accent-primary);">{{ emp.full_name }}</a>
+              </td>
+              <td>{{ emp.email }}</td>
+              <td>{{ emp.department.name|default:"--" }}</td>
+              <td>{{ emp.designation.title|default:"--" }}</td>
+              <td><span class="badge badge-{{ emp.status }}">{{ emp.status }}</span></td>
+              <td>
+                <div style="display: flex; gap: 0.5rem;">
+                  <a href="{% url 'employees:employee_detail' emp.id %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">View</a>
+                  {% if is_admin or is_hr %}
+                    <a href="{% url 'employees:employee_edit' emp.id %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">Edit</a>
+                    <a href="{% url 'employees:employee_delete' emp.id %}" class="btn btn-danger" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">Delete</a>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    
+    {% include 'components/pagination.html' with page_obj=employees %}
+  {% else %}
+    {% include 'components/empty_state.html' with message="No employees match the filter criteria." %}
+  {% endif %}
+</div>
+{% endblock %}

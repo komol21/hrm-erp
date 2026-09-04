@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="glass-card" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <h3 style="font-size: 1.25rem;">My Leave Applications</h3>
+    <p style="color: var(--text-secondary); font-size: 0.85rem;">Check status and apply for leave time off</p>
+  </div>
+  
+  <a href="{% url 'leave:request_create' %}" class="btn btn-primary">+ Apply for Leave</a>
+</div>
+
+<div class="glass-card">
+  {% if requests %}
+    <div class="table-container">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Leave Type</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Duration</th>
+            <th>Applied Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in requests %}
+            <tr>
+              <td style="font-weight: 600;">{{ r.leave_type.name }}</td>
+              <td>{{ r.start_date }}</td>
+              <td>{{ r.end_date }}</td>
+              <td style="font-weight: 700; color: var(--accent-primary);">{{ r.total_days }} day(s)</td>
+              <td>{{ r.application_date|date:"Y-m-d" }}</td>
+              <td><span class="badge badge-{{ r.status }}">{{ r.status }}</span></td>
+              <td>
+                <a href="{% url 'leave:request_detail' r.id %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">Details</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    
+    {% include 'components/pagination.html' with page_obj=requests %}
+  {% else %}
+    {% include 'components/empty_state.html' with message="You have not submitted any leave applications yet." %}
+  {% endif %}
+</div>
+{% endblock %}

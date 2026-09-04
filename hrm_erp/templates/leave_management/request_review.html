@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 600px; margin: 0 auto;">
+  <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 1rem;">
+    <h3 style="font-size: 1.25rem; margin-bottom: 0.25rem;">Review Leave Application</h3>
+    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+      Reviewing request for <strong>{{ request_item.employee.full_name }}</strong>
+    </p>
+  </div>
+
+  <div style="background: rgba(0,0,0,0.15); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-glass); margin-bottom: 2rem; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.9rem;">
+    <div>
+      <span style="color: var(--text-muted); font-weight: 700; font-size: 0.75rem;">TYPE:</span> {{ request_item.leave_type.name }}
+    </div>
+    <div>
+      <span style="color: var(--text-muted); font-weight: 700; font-size: 0.75rem;">DATES:</span> {{ request_item.start_date }} to {{ request_item.end_date }} ({{ request_item.total_days }} days)
+    </div>
+    <div>
+      <span style="color: var(--text-muted); font-weight: 700; font-size: 0.75rem;">REASON:</span>
+      <div style="margin-top: 0.25rem; white-space: pre-line; color: var(--text-secondary);">{{ request_item.reason }}</div>
+    </div>
+  </div>
+
+  <form method="POST">
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label class="form-label">Review Decision</label>
+      {{ form.status }}
+      {{ form.status.errors }}
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Manager Comment</label>
+      {{ form.manager_comment }}
+      {{ form.manager_comment.errors }}
+    </div>
+
+    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+      <button type="submit" class="btn btn-primary">Submit Review</button>
+      <a href="{% url 'leave:request_list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

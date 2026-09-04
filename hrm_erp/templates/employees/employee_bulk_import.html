@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 900px; margin: 0 auto;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 1rem;">
+    <div>
+      <h2 style="font-size: 1.5rem; margin-bottom: 0.25rem;">Bulk Onboard Employees & Users</h2>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;">Upload a CSV file to provision multiple employee records and login accounts simultaneously.</p>
+    </div>
+    <a href="{% url 'employees:employee_bulk_import' %}?sample=csv" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+      <span>📥</span> Download Sample CSV Template
+    </a>
+  </div>
+
+  <!-- Instructions & Guidelines -->
+  <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: var(--radius-sm); padding: 1.25rem; margin-bottom: 2rem;">
+    <h4 style="color: var(--accent-primary); margin-top: 0; margin-bottom: 0.5rem; font-size: 1rem;">⚡ Automated Provisioning Rules</h4>
+    <ul style="margin: 0; padding-left: 1.25rem; color: var(--text-primary); font-size: 0.88rem; line-height: 1.6;">
+      <li><strong>Employee Profiles:</strong> Generates staff profile with status set to <code>active</code>.</li>
+      <li><strong>User Accounts:</strong> Automatically provisions a login account matching the email. Default password: <code>Employee@123</code>.</li>
+      <li><strong>Role Assignment:</strong> Supports <code>Employee</code> (default), <code>HR</code>, or <code>Admin</code> roles.</li>
+      <li><strong>Organization Auto-linking:</strong> If the Department, Designation, or Branch does not exist, it will be automatically created.</li>
+      <li><strong>Duplicate Handling:</strong> If an employee with the same email already exists, their profile details will be updated safely.</li>
+    </ul>
+  </div>
+
+  <!-- CSV Upload Form -->
+  <form method="POST" enctype="multipart/form-data" style="margin-bottom: 2rem;">
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label class="form-label" style="font-size: 1rem; font-weight: 600;">Select CSV File</label>
+      <div style="border: 2px dashed var(--border-glass); border-radius: var(--radius-md); padding: 2.5rem 1.5rem; text-align: center; background: rgba(255,255,255,0.02); transition: border-color 0.2s;" id="drop-zone">
+        <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📄</div>
+        <p style="margin-bottom: 1rem; color: var(--text-secondary); font-size: 0.95rem;">Choose a <code>.csv</code> file or drag and drop it here</p>
+        <input type="file" name="csv_file" id="csv_file" accept=".csv" required style="display: none;" onchange="updateFileName(this)">
+        <label for="csv_file" class="btn btn-primary" style="cursor: pointer; display: inline-block;">
+          Browse File
+        </label>
+        <div id="file-name-display" style="margin-top: 1rem; font-size: 0.9rem; font-weight: 600; color: var(--accent-primary);"></div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+      <a href="{% url 'employees:employee_list' %}" class="btn btn-secondary">Cancel</a>
+      <button type="submit" class="btn btn-primary" style="padding: 0.75rem 2rem;">Upload & Process Import</button>
+    </div>
+  </form>
+
+  <!-- Expected Columns Reference Table -->
+  <div>
+    <h4 style="font-size: 1.05rem; margin-bottom: 0.75rem;">Expected CSV Columns Reference</h4>
+    <div class="table-container">
+      <table class="custom-table" style="font-size: 0.85rem;">
+        <thead>
+          <tr>
+            <th>Column Header</th>
+            <th>Required?</th>
+            <th>Example</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>first_name</code></td>
+            <td><span class="badge badge-danger" style="font-size: 0.75rem;">Required</span></td>
+            <td>Alex</td>
+            <td>Employee's first name</td>
+          </tr>
+          <tr>
+            <td><code>last_name</code></td>
+            <td><span class="badge badge-danger" style="font-size: 0.75rem;">Required</span></td>
+            <td>Morgan</td>
+            <td>Employee's last name</td>
+          </tr>
+          <tr>
+            <td><code>email</code></td>
+            <td><span class="badge badge-danger" style="font-size: 0.75rem;">Required</span></td>
+            <td>alex.morgan@company.com</td>
+            <td>Unique work email address</td>
+          </tr>
+          <tr>
+            <td><code>phone</code></td>
+            <td>Optional</td>
+            <td>+1-555-0199</td>
+            <td>Contact phone number</td>
+          </tr>
+          <tr>
+            <td><code>gender</code></td>
+            <td>Optional</td>
+            <td>male / female / other</td>
+            <td>Gender identification</td>
+          </tr>
+          <tr>
+            <td><code>hire_date</code></td>
+            <td>Optional</td>
+            <td>YYYY-MM-DD</td>
+            <td>Defaults to current date if omitted</td>
+          </tr>
+          <tr>
+            <td><code>department</code></td>
+            <td>Optional</td>
+            <td>Engineering</td>
+            <td>Auto-created if new</td>
+          </tr>
+          <tr>
+            <td><code>designation</code></td>
+            <td>Optional</td>
+            <td>Software Engineer</td>
+            <td>Auto-created if new</td>
+          </tr>
+          <tr>
+            <td><code>branch</code></td>
+            <td>Optional</td>
+            <td>Headquarters</td>
+            <td>Auto-created if new</td>
+          </tr>
+          <tr>
+            <td><code>basic_salary</code></td>
+            <td>Optional</td>
+            <td>65000</td>
+            <td>Defaults to 50000.00</td>
+          </tr>
+          <tr>
+            <td><code>role</code></td>
+            <td>Optional</td>
+            <td>Employee / HR / Admin</td>
+            <td>Defaults to Employee role</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  function updateFileName(input) {
+    const display = document.getElementById('file-name-display');
+    if (input.files && input.files[0]) {
+      display.textContent = 'Selected: ' + input.files[0].name;
+    } else {
+      display.textContent = '';
+    }
+  }
+
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('csv_file');
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.style.borderColor = 'var(--accent-primary)';
+      dropZone.style.background = 'rgba(59, 130, 246, 0.05)';
+    }, false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.style.borderColor = 'var(--border-glass)';
+      dropZone.style.background = 'rgba(255,255,255,0.02)';
+    }, false);
+  });
+
+  dropZone.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    if (files.length) {
+      fileInput.files = files;
+      updateFileName(fileInput);
+    }
+  });
+</script>
+{% endblock %}

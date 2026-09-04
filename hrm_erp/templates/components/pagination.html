@@ -1,0 +1,17 @@
+{% if page_obj.has_other_pages %}
+  <div class="pagination" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 1.5rem; padding: 1rem 0;">
+    {% if page_obj.has_previous %}
+      <a href="?page=1{% if search %}&search={{ search }}{% endif %}{% if selected_department %}&department={{ selected_department }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_branch %}&branch={{ selected_branch }}{% endif %}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">&laquo; First</a>
+      <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if selected_department %}&department={{ selected_department }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_branch %}&branch={{ selected_branch }}{% endif %}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Previous</a>
+    {% endif %}
+
+    <span style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600;">
+      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if selected_department %}&department={{ selected_department }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_branch %}&branch={{ selected_branch }}{% endif %}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Next</a>
+      <a href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if selected_department %}&department={{ selected_department }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_branch %}&branch={{ selected_branch }}{% endif %}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Last &raquo;</a>
+    {% endif %}
+  </div>
+{% endif %}

@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem; align-items: start; flex-wrap: wrap;">
+  <!-- Left Column: Photo Card -->
+  <div class="glass-card" style="text-align: center;">
+    {% if employee.photo %}
+      <img src="{{ employee.photo.url }}" alt="{{ employee.full_name }}" style="width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent-primary); margin: 0 auto 1.25rem;">
+    {% else %}
+      <div style="width: 140px; height: 140px; border-radius: 50%; background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #fff; margin: 0 auto 1.25rem; font-weight: 800;">
+        {{ employee.first_name|slice:":1" }}{{ employee.last_name|slice:":1" }}
+      </div>
+    {% endif %}
+    
+    <h3 style="font-size: 1.35rem; margin-bottom: 0.25rem;">{{ employee.full_name }}</h3>
+    <p style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; margin-bottom: 1rem;">
+      {{ employee.designation.title|default:"No Designation Assigned" }}
+    </p>
+    
+    <span class="badge badge-{{ employee.status }}" style="margin-bottom: 1.5rem;">{{ employee.status }}</span>
+
+    <div style="border-top: 1px solid var(--border-glass); padding-top: 1.25rem; text-align: left; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem;">
+      <div>
+        <span style="color: var(--text-muted); font-weight: 600;">Department:</span>
+        <div style="font-weight: 600; margin-top: 0.1rem;">{{ employee.department.name|default:"--" }}</div>
+      </div>
+      <div>
+        <span style="color: var(--text-muted); font-weight: 600;">Location:</span>
+        <div style="font-weight: 600; margin-top: 0.1rem;">{{ employee.branch.name|default:"--" }}</div>
+      </div>
+      <div>
+        <span style="color: var(--text-muted); font-weight: 600;">Basic Salary:</span>
+        <div style="font-weight: 700; margin-top: 0.1rem; color: var(--accent-primary);">৳{{ employee.basic_salary|floatformat:2 }}</div>
+      </div>
+    </div>
+    
+    <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+      {% if is_own_profile or request.user.employee_id == employee.id %}
+        <a href="{% url 'employees:edit_my_profile' %}" class="btn btn-primary" style="width: 100%;">✏️ Edit My Profile</a>
+        {% if not is_admin %}
+          <a href="{% url 'accounts:my_role_requests' %}" class="btn btn-secondary" style="width: 100%;">🛡️ Request Role Privileges</a>
+        {% endif %}
+      {% endif %}
+
+      {% if is_admin or is_hr %}
+        <a href="{% url 'employees:employee_edit' employee.id %}" class="btn btn-secondary" style="width: 100%;">⚙️ Edit Official HR Details</a>
+        <a href="{% url 'payroll:payroll_create' %}?employee={{ employee.id }}" class="btn btn-secondary" style="width: 100%;">💳 Create Payslip</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Right Column: Details Tabs -->
+  <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+    <!-- Profile Details Card -->
+    <div class="glass-card">
+      <h3 style="font-size: 1.15rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 0.5rem;">Contact & Profile Information</h3>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+        <div>
+          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Email Address</span>
+          <p style="font-weight: 600; margin-top: 0.25rem;">{{ employee.email }}</p>
+        </div>
+        
+        <div>
+          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Phone Number</span>
+          <p style="font-weight: 600; margin-top: 0.25rem;">{{ employee.phone|default:"Not provided" }}</p>
+        </div>
+
+        <div>
+          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Date of Birth</span>
+          <p style="font-weight: 600; margin-top: 0.25rem;">{{ employee.date_of_birth|default:"--" }}</p>
+        </div>
+
+        <div>
+          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Gender</span>
+          <p style="font-weight: 600; margin-top: 0.25rem; text-transform: capitalize;">{{ employee.gender|default:"--" }}</p>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.5rem;">
+        <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Residential Address</span>
+        <p style="font-weight: 600; margin-top: 0.25rem;">{{ employee.address|default:"Not provided." }}</p>
+      </div>
+
+      <div style="margin-top: 1.5rem;">
+        <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Employment Start Date (Hire Date)</span>
+        <p style="font-weight: 600; margin-top: 0.25rem;">{{ employee.hire_date }}</p>
+      </div>
+    </div>
+    
+    <!-- User Account details if matched -->
+    <div class="glass-card">
+      <h3 style="font-size: 1.15rem; margin-bottom: 1rem;">Linked Portal Account</h3>
+      {% if employee.user_account %}
+        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-glass);">
+          <div>
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">USERNAME</span>
+            <div style="font-weight: 700;">{{ employee.user_account.username }}</div>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">SYSTEM ROLE</span>
+            <div>
+              {% for r in employee.user_account.get_role_names %}
+                <span class="badge badge-active">{{ r }}</span>
+              {% empty %}
+                <span style="color: var(--text-muted);">None</span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      {% else %}
+        {% include 'components/empty_state.html' with message="No login portal account associated with this employee profile yet." %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="glass-card" style="margin-bottom: 2rem;">
+  <!-- Filters Form -->
+  <form method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: end;">
+    <div class="form-group" style="margin-bottom: 0;">
+      <label class="form-label">Employee Search</label>
+      <input type="text" name="search" class="form-input" placeholder="Search by name..." value="{{ search }}">
+    </div>
+    
+    <div class="form-group" style="margin-bottom: 0;">
+      <label class="form-label">Date From</label>
+      <input type="date" name="date_from" class="form-input" value="{{ date_from }}">
+    </div>
+
+    <div class="form-group" style="margin-bottom: 0;">
+      <label class="form-label">Date To</label>
+      <input type="date" name="date_to" class="form-input" value="{{ date_to }}">
+    </div>
+
+    <div class="form-group" style="margin-bottom: 0;">
+      <label class="form-label">Status</label>
+      <select name="status" class="form-input">
+        <option value="">-- All Statuses --</option>
+        {% for s_val, s_lbl in status_choices %}
+          <option value="{{ s_val }}" {% if selected_status == s_val %}selected{% endif %}>{{ s_lbl }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group" style="margin-bottom: 0;">
+      <label class="form-label">Department</label>
+      <select name="department" class="form-input">
+        <option value="">-- All Departments --</option>
+        {% for dept in departments %}
+          <option value="{{ dept.id }}" {% if selected_department == dept.id|stringformat:"d" %}selected{% endif %}>{{ dept.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="display: flex; gap: 0.5rem;">
+      <button type="submit" class="btn btn-primary" style="flex: 1;">Filter</button>
+      <a href="{% url 'attendance:attendance_list' %}" class="btn btn-secondary" style="flex: 1;">Reset</a>
+    </div>
+  </form>
+</div>
+
+<div class="glass-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <h3 style="font-size: 1.25rem;">Daily Attendance Log</h3>
+    {% if is_admin or is_hr %}
+      <a href="{% url 'attendance:attendance_create' %}" class="btn btn-primary">+ Log Attendance</a>
+    {% endif %}
+  </div>
+
+  {% if records %}
+    <div class="table-container">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Department</th>
+            <th>Date</th>
+            <th>Check In</th>
+            <th>Check Out</th>
+            <th>Work Hours</th>
+            <th>Late (Min)</th>
+            <th>Status</th>
+            <th>HR Comment</th>
+            {% if is_admin or is_hr %}
+              <th>Actions</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in records %}
+            <tr>
+              <td style="font-weight: 600;">{{ r.employee.full_name }}</td>
+              <td>{{ r.employee.department|default:"—" }}</td>
+              <td>{{ r.date }}</td>
+              <td style="font-family: monospace;">{{ r.check_in|default:"--" }}</td>
+              <td style="font-family: monospace;">{{ r.check_out|default:"--" }}</td>
+              <td style="font-weight: 700;">{{ r.working_hours|default:"0.00" }}</td>
+              <td style="color: {% if r.late_minutes > 0 %}var(--warning){% else %}inherit{% endif %}; font-weight: 600;">
+                {{ r.late_minutes }}
+              </td>
+              <td><span class="badge badge-{{ r.status }}">{{ r.get_status_display }}</span></td>
+              <td style="max-width: 200px; font-size: 0.8rem; color: var(--text-secondary);">
+                {% if r.hr_comment %}
+                  {{ r.hr_comment|truncatewords:12 }}
+                {% else %}
+                  <span style="color: var(--text-muted);">—</span>
+                {% endif %}
+              </td>
+              {% if is_admin or is_hr %}
+                <td>
+                  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <a href="{% url 'attendance:hr_add_comment' r.id %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;" title="Add/Edit HR Comment">💬 Comment</a>
+                    <a href="{% url 'attendance:attendance_edit' r.id %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">Edit</a>
+                    <a href="{% url 'attendance:attendance_delete' r.id %}" class="btn btn-danger" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">Delete</a>
+                  </div>
+                </td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    
+    {% include 'components/pagination.html' with page_obj=records %}
+  {% else %}
+    {% include 'components/empty_state.html' with message="No attendance records found matching filters." %}
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,164 @@
+<aside class="sidebar" id="app-sidebar">
+  <div class="sidebar-brand">
+    <span>TalentCore</span>
+  </div>
+  
+  <ul class="sidebar-menu">
+    <!-- General Dashboards -->
+    <li>
+      <a href="{% url 'dashboard:redirect' %}" class="sidebar-link {% if request.resolver_match.view_name == 'dashboard:redirect' or request.resolver_match.namespace == 'dashboard' %}active{% endif %}">
+        <span>📊</span> Dashboard
+      </a>
+    </li>
+
+    <li>
+      <a href="{% url 'assistant:chat' %}" class="sidebar-link {% if request.resolver_match.namespace == 'assistant' %}active{% endif %}" style="position: relative;">
+        <span>✨</span> HR AI Assistant
+        <span class="badge" style="font-size: 0.65rem; background: rgba(16, 185, 129, 0.18); color: #34d399; margin-left: auto; padding: 0.15rem 0.45rem; border-radius: 999px;">AI</span>
+      </a>
+    </li>
+    
+    <!-- Admin & HR Only Sections -->
+    {% if is_admin or is_hr %}
+      <li class="sidebar-section-header" style="padding: 1rem 1rem 0.25rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">HR Management</li>
+      
+      <li>
+        <a href="{% url 'employees:employee_list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'employees' %}active{% endif %}">
+          <span>👥</span> Employees
+        </a>
+      </li>
+      
+      <li>
+        <a href="{% url 'organization:department_list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'organization' %}active{% endif %}">
+          <span>🏢</span> Organization
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'attendance:attendance_list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'attendance' and 'my' not in request.resolver_match.view_name and 'policy' not in request.resolver_match.view_name %}active{% endif %}">
+          <span>⏱️</span> Attendance Log
+        </a>
+      </li>
+      
+      <li>
+        <a href="{% url 'attendance:attendance_policy_detail' %}" class="sidebar-link {% if 'policy' in request.resolver_match.view_name %}active{% endif %}">
+          <span>⚙️</span> Attendance Policy
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'leave:request_list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'leave' and 'my' not in request.resolver_match.view_name and 'type' not in request.resolver_match.view_name %}active{% endif %}">
+          <span>✉️</span> Leave Requests
+        </a>
+      </li>
+      
+      <li>
+        <a href="{% url 'leave:type_list' %}" class="sidebar-link {% if 'type' in request.resolver_match.view_name %}active{% endif %}">
+          <span>⚙️</span> Leave Types
+        </a>
+      </li>
+      
+      <li>
+        <a href="{% url 'payroll:payroll_list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'payroll' and 'my' not in request.resolver_match.view_name %}active{% endif %}">
+          <span>💳</span> Payroll
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'recruitment:cv_analysis' %}" class="sidebar-link {% if request.resolver_match.namespace == 'recruitment' and 'vacancy' not in request.resolver_match.view_name %}active{% endif %}">
+          <span>🤖</span> AI CV Analysis
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'recruitment:vacancy_list' %}" class="sidebar-link {% if 'vacancy' in request.resolver_match.view_name %}active{% endif %}">
+          <span>💼</span> Job Vacancies
+        </a>
+      </li>
+    {% endif %}
+
+
+    <!-- Self Service Section -->
+    {% if is_employee_role or linked_employee or is_admin or is_hr %}
+      <li class="sidebar-section-header" style="padding: 1rem 1rem 0.25rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Self Service</li>
+      
+      <li>
+        <a href="{% url 'employees:my_profile' %}" class="sidebar-link {% if request.resolver_match.view_name == 'employees:my_profile' %}active{% endif %}">
+          <span>👤</span> My Profile
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'attendance:my_attendance' %}" class="sidebar-link {% if request.resolver_match.view_name == 'attendance:my_attendance' %}active{% endif %}">
+          <span>📅</span> My Attendance
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'attendance:attendance_policy_detail' %}" class="sidebar-link {% if request.resolver_match.view_name == 'attendance:attendance_policy_detail' %}active{% endif %}">
+          <span>⏱️</span> Attendance Policy
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'leave:my_leaves' %}" class="sidebar-link {% if request.resolver_match.view_name == 'leave:my_leaves' or request.resolver_match.view_name == 'leave:request_create' %}active{% endif %}">
+          <span>🌴</span> My Leaves
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'leave:type_list' %}" class="sidebar-link {% if 'type' in request.resolver_match.view_name %}active{% endif %}">
+          <span>⚙️</span> Leave Types
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'payroll:my_payroll' %}" class="sidebar-link {% if request.resolver_match.view_name == 'payroll:my_payroll' %}active{% endif %}">
+          <span>🧾</span> My Payslips
+        </a>
+      </li>
+
+      {% if not is_admin %}
+      <li>
+        <a href="{% url 'accounts:my_role_requests' %}" class="sidebar-link {% if request.resolver_match.view_name == 'accounts:my_role_requests' %}active{% endif %}">
+          <span>🛡️</span> Request Role Upgrade
+        </a>
+      </li>
+      {% endif %}
+    {% endif %}
+
+    <!-- Admin Only Settings -->
+    {% if is_admin %}
+      <li class="sidebar-section-header" style="padding: 1rem 1rem 0.25rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">System Settings</li>
+      
+      <li>
+        <a href="{% url 'accounts:admin_role_request_list' %}" class="sidebar-link {% if 'role_request' in request.resolver_match.view_name %}active{% endif %}" style="display: flex; align-items: center;">
+          <span>⚖️</span> Role Requests
+          {% if pending_role_requests_count > 0 %}
+            <span style="background: #ffc107; color: #000; font-weight: 800; font-size: 0.65rem; padding: 0.1rem 0.45rem; border-radius: 10px; margin-left: auto;">
+              {{ pending_role_requests_count }}
+            </span>
+          {% endif %}
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'accounts:user_list' %}" class="sidebar-link {% if 'user' in request.resolver_match.view_name %}active{% endif %}">
+          <span>🔑</span> User Accounts
+        </a>
+      </li>
+      
+      <li>
+        <a href="{% url 'accounts:role_list' %}" class="sidebar-link {% if 'role_list' in request.resolver_match.view_name or 'role_edit' in request.resolver_match.view_name or 'role_create' in request.resolver_match.view_name %}active{% endif %}">
+          <span>🛡️</span> Security Roles
+        </a>
+      </li>
+    {% endif %}
+  </ul>
+
+  <div class="sidebar-footer">
+    <a href="{% url 'accounts:logout' %}" class="sidebar-link" style="color: var(--danger);">
+      <span>🚪</span> Logout
+    </a>
+  </div>
+</aside>

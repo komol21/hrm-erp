@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="glass-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <!-- Search Bar -->
+    <form method="GET" style="display: flex; gap: 0.5rem; max-width: 400px; width: 100%;">
+      <input type="text" name="search" class="form-input" placeholder="Search by username or email..." value="{{ search }}">
+      <button type="submit" class="btn btn-secondary">Search</button>
+    </form>
+    
+    <!-- Add User Link -->
+    <a href="{% url 'accounts:user_create' %}" class="btn btn-primary">+ Create User</a>
+  </div>
+
+  {% if users %}
+    <div class="table-container">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Linked Employee</th>
+            <th>Roles</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+            <tr>
+              <td style="font-weight: 600;">{{ u.username }}</td>
+              <td>{{ u.email }}</td>
+              <td>
+                {% if u.employee %}
+                  <a href="{% url 'employees:employee_detail' u.employee.id %}" style="color: var(--accent-primary); font-weight: 600;">
+                    {{ u.employee.full_name }}
+                  </a>
+                {% else %}
+                  <span style="color: var(--text-muted);">None</span>
+                {% endif %}
+              </td>
+              <td>
+                {% for r in u.get_role_names %}
+                  <span class="badge badge-active" style="margin-right: 0.25rem;">{{ r }}</span>
+                {% empty %}
+                  <span style="color: var(--text-muted);">No Roles</span>
+                {% endfor %}
+              </td>
+              <td>
+                {% if u.is_active %}
+                  <span class="badge badge-active">Active</span>
+                {% else %}
+                  <span class="badge badge-terminated">Inactive</span>
+                {% endif %}
+              </td>
+              <td>
+                <div style="display: flex; gap: 0.5rem;">
+                  <a href="{% url 'accounts:user_edit' u.id %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">Edit</a>
+                  <a href="{% url 'accounts:user_delete' u.id %}" class="btn btn-danger" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">Delete</a>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    
+    {% include 'components/pagination.html' with page_obj=users %}
+  {% else %}
+    {% include 'components/empty_state.html' with message="No user accounts match your search filters." %}
+  {% endif %}
+</div>
+{% endblock %}

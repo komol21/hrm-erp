@@ -1,0 +1,1134 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+  .cv-score-radial {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0.9) 70%);
+    border: 3px solid #10b981;
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.3);
+    margin: 0 auto 1rem;
+    transition: all 0.4s ease;
+  }
+  .cv-score-radial.moderate {
+    border-color: #f59e0b;
+    box-shadow: 0 0 25px rgba(245, 158, 11, 0.3);
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, rgba(15, 23, 42, 0.9) 70%);
+  }
+  .cv-score-radial.weak {
+    border-color: #ef4444;
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.3);
+    background: radial-gradient(circle, rgba(239, 68, 68, 0.15) 0%, rgba(15, 23, 42, 0.9) 70%);
+  }
+  .rec-badge-pill {
+    display: inline-block;
+    padding: 0.4rem 1.25rem;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    transition: all 0.3s ease;
+  }
+  .rec-badge-pill.moderate {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+  }
+  .rec-badge-pill.weak {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+  }
+  .skill-pill-matched {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    background: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    margin: 0.25rem;
+  }
+  .skill-pill-missing {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    background: rgba(239, 68, 68, 0.12);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    margin: 0.25rem;
+  }
+  .analysis-section-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .spinner-pulse {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 0.8s ease-in-out infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Mode Switcher Tabs */
+  .mode-tabs {
+    display: flex;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    margin-bottom: 1.25rem;
+    border: 1px solid var(--border-glass);
+  }
+  .mode-tab-btn {
+    flex: 1;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.84rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+  .mode-tab-btn.active {
+    background: var(--accent-gradient);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(79, 172, 254, 0.3);
+  }
+
+  /* Batch Dropzone & Queue */
+  .dropzone-box {
+    border: 2px dashed var(--border-glass);
+    border-radius: var(--radius-md);
+    padding: 1.6rem 1rem;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.02);
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .dropzone-box:hover, .dropzone-box.drag-over {
+    border-color: var(--accent-primary);
+    background: rgba(79, 172, 254, 0.06);
+  }
+  .batch-file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.82rem;
+    transition: background 0.2s ease;
+  }
+  .batch-file-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  /* Progress Bar */
+  .batch-progress-wrapper {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 999px;
+    height: 10px;
+    overflow: hidden;
+    margin: 0.75rem 0;
+    border: 1px solid var(--border-glass);
+  }
+  .batch-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #4facfe, #00f2fe, #10b981);
+    background-size: 200% 100%;
+    animation: gradientShift 2s linear infinite;
+    transition: width 0.3s ease;
+  }
+  @keyframes gradientShift {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+  }
+
+  /* Ranked Leaderboard */
+  .leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  .leaderboard-table th {
+    text-align: left;
+    padding: 0.75rem 0.85rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-glass);
+  }
+  .leaderboard-table td {
+    padding: 0.85rem;
+    border-bottom: 1px solid var(--border-glass);
+    vertical-align: middle;
+  }
+  .leaderboard-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-weight: 800;
+    font-size: 0.75rem;
+  }
+  .rank-badge-1 {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+  }
+  .rank-badge-2 {
+    background: linear-gradient(135deg, #94a3b8, #64748b);
+    color: #fff;
+    box-shadow: 0 0 12px rgba(148, 163, 184, 0.4);
+  }
+  .rank-badge-3 {
+    background: linear-gradient(135deg, #b45309, #78350f);
+    color: #fff;
+    box-shadow: 0 0 12px rgba(180, 83, 9, 0.4);
+  }
+  .rank-badge-other {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-glass);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <h2 style="font-size: 1.75rem; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.6rem;">
+      <span>🤖</span> AI-Powered CV Analysis & Job Matching
+    </h2>
+    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+      Analyze individual resumes or screen batches of candidate CVs simultaneously against open job openings.
+    </p>
+  </div>
+  <div style="display: flex; gap: 0.5rem;">
+    <a href="{% url 'recruitment:analysis_history' %}" class="btn btn-secondary" style="font-size: 0.85rem;">
+      📜 Analysis History
+    </a>
+    <a href="{% url 'recruitment:vacancy_list' %}" class="btn btn-secondary" style="font-size: 0.85rem;">
+      💼 Job Vacancies
+    </a>
+  </div>
+</div>
+
+<!-- Ethical Decision Support Banner -->
+<div style="background: rgba(79, 172, 254, 0.08); border-left: 4px solid var(--accent-primary); border-radius: var(--radius-sm); padding: 0.85rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+  <span style="font-size: 1.25rem;">⚖️</span>
+  <div style="font-size: 0.85rem; color: var(--text-secondary);">
+    <strong style="color: var(--text-primary);">HR Decision-Support Tool:</strong> 
+    AI analysis evaluates only job-related technical qualifications and experience. Protected personal characteristics are excluded. Final recruitment decisions are always made by HR.
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1.3fr; gap: 1.5rem; align-items: start;">
+  
+  <!-- Left Column: Upload & Configuration Form -->
+  <div class="glass-card">
+    
+    <!-- Mode Switcher Tabs -->
+    <div class="mode-tabs">
+      <button type="button" id="tab-single" class="mode-tab-btn active" onclick="switchUploadMode('single')">
+        📄 Single CV
+      </button>
+      <button type="button" id="tab-batch" class="mode-tab-btn" onclick="switchUploadMode('batch')">
+        📑 Batch / Multi-CV <span style="font-size: 0.68rem; background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 0.1rem 0.45rem; border-radius: 999px; font-weight: 700;">Bulk</span>
+      </button>
+    </div>
+
+    {% if not vacancies %}
+      <div style="text-align: center; padding: 2rem 1rem;">
+        <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">💼</div>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.25rem;">
+          No open job vacancies found. Please create a job vacancy first to analyze CVs against.
+        </p>
+        <a href="{% url 'recruitment:vacancy_create' %}" class="btn btn-primary">
+          + Create Job Vacancy
+        </a>
+      </div>
+    {% else %}
+
+      <!-- Shared Target Job Vacancy Selector -->
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label for="id_job_vacancy" class="form-label">
+          Target Job Vacancy <span style="color: var(--danger);">*</span>
+        </label>
+        <select name="job_vacancy" id="id_job_vacancy" class="form-input" required>
+          <option value="">-- Choose Job Opening --</option>
+          {% for v in vacancies %}
+            <option value="{{ v.id }}" {% if selected_vacancy and selected_vacancy.id == v.id %}selected{% endif %}>
+              {{ v.title }} ({{ v.department.name|default:"General" }}) - {{ v.required_experience_years }}+ yrs req.
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- ─── 1. Single CV Upload Form ───────────────────────────────────── -->
+      <div id="single-mode-container">
+        <form id="cv-analysis-form" method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <!-- Candidate Info (Optional) -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="id_candidate_name" class="form-label">Candidate Name</label>
+              <input type="text" name="candidate_name" id="id_candidate_name" class="form-input" placeholder="e.g. Alex Morgan">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="id_candidate_email" class="form-label">Candidate Email</label>
+              <input type="email" name="candidate_email" id="id_candidate_email" class="form-input" placeholder="alex@example.com">
+            </div>
+          </div>
+
+          <!-- Single File Drop Area -->
+          <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label class="form-label">
+              Candidate CV / Resume (PDF or DOCX, max 5MB) <span style="color: var(--danger);">*</span>
+            </label>
+            <div class="dropzone-box" onclick="document.getElementById('id_cv_file').click()">
+              <div style="font-size: 2.25rem; margin-bottom: 0.5rem;">📎</div>
+              <div style="font-weight: 600; font-size: 0.92rem; margin-bottom: 0.25rem;" id="upload-label">
+                Click to browse or drop candidate CV here
+              </div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">
+                Supported formats: .PDF, .DOCX (Max 5MB)
+              </div>
+              <input type="file" name="cv_file" id="id_cv_file" accept=".pdf,.docx" style="display: none;" onchange="handleSingleFileSelected(this)">
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" id="btn-analyze" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <span id="btn-text">🚀 Run AI CV Analysis</span>
+            <span id="btn-spinner" class="spinner-pulse" style="display: none;"></span>
+          </button>
+        </form>
+      </div>
+
+      <!-- ─── 2. Batch / Multi-CV Upload Form ────────────────────────────── -->
+      <div id="batch-mode-container" style="display: none;">
+        <div style="background: rgba(79, 172, 254, 0.05); border: 1px solid rgba(79, 172, 254, 0.2); border-radius: var(--radius-sm); padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
+          <span>💡</span> Candidate names and emails are automatically parsed from each resume file!
+        </div>
+
+        <!-- Multi-File Drop Area -->
+        <div class="dropzone-box" id="batch-dropzone" onclick="document.getElementById('id_batch_files').click()">
+          <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📑</div>
+          <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.25rem;">
+            Click to browse or drop multiple CVs here
+          </div>
+          <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+            Select 2 or more PDF / DOCX resumes at once (Max 5MB each)
+          </div>
+          <span class="btn btn-secondary" style="padding: 0.35rem 0.85rem; font-size: 0.78rem; pointer-events: none;">
+            + Choose Multiple Files
+          </span>
+          <input type="file" id="id_batch_files" multiple accept=".pdf,.docx" style="display: none;" onchange="handleBatchFiles(this.files)">
+        </div>
+
+        <!-- Selected Files Queue Header & Container -->
+        <div id="batch-queue-section" style="display: none; margin-top: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+            <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-secondary);" id="batch-count-label">
+              0 CVs Selected
+            </span>
+            <button type="button" onclick="clearBatchQueue()" style="background: none; border: none; color: var(--danger); font-size: 0.78rem; cursor: pointer; text-decoration: underline;">
+              Clear All
+            </button>
+          </div>
+
+          <div id="batch-file-list" style="display: flex; flex-direction: column; gap: 0.45rem; max-height: 200px; overflow-y: auto; padding-right: 4px; margin-bottom: 1.25rem;">
+            <!-- Rendered dynamically -->
+          </div>
+
+          <!-- Progress Bar Area -->
+          <div id="batch-progress-container" style="display: none; margin-bottom: 1.25rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass); border-radius: var(--radius-sm); padding: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 0.25rem;">
+              <span id="batch-progress-status" style="font-weight: 600; color: var(--accent-primary);">Analyzing CVs with AI...</span>
+              <span id="batch-progress-pct" style="font-weight: 700;">0%</span>
+            </div>
+            <div class="batch-progress-wrapper">
+              <div id="batch-progress-bar" class="batch-progress-bar"></div>
+            </div>
+            <div id="batch-progress-file" style="font-size: 0.75rem; color: var(--text-muted);">
+              Preparing queue...
+            </div>
+          </div>
+
+          <!-- Batch Action Button -->
+          <button type="button" id="btn-run-batch" onclick="executeBatchAnalysis()" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <span id="batch-btn-text">🚀 Run Batch AI Analysis</span>
+            <span id="batch-btn-spinner" class="spinner-pulse" style="display: none;"></span>
+          </button>
+        </div>
+      </div>
+
+    {% endif %}
+
+    <!-- Recent Analyses Quick Links -->
+    {% if recent_analyses %}
+      <div style="margin-top: 2rem; border-top: 1px solid var(--border-glass); padding-top: 1.25rem;">
+        <div style="font-size: 0.8rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); margin-bottom: 0.75rem;">
+          Recent Analyses
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          {% for r in recent_analyses %}
+            <a href="{% url 'recruitment:analysis_detail' r.id %}" style="text-decoration: none; display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.85rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass); border-radius: var(--radius-sm); font-size: 0.82rem; color: var(--text-primary);">
+              <div>
+                <span style="font-weight: 600;">{{ r.candidate_cv.job_vacancy.title }}</span>
+                <span style="color: var(--text-muted); font-size: 0.75rem;"> &bull; {{ r.candidate_cv.candidate.name|default:r.candidate_cv.file_name }}</span>
+              </div>
+              <span class="badge {% if r.match_score >= 75 %}badge-active{% elif r.match_score >= 50 %}{% else %}badge-rejected{% endif %}" style="font-weight: 700;">
+                {{ r.match_score }}%
+              </span>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Right Column: AI Analysis Results Viewport -->
+  <div class="glass-card" id="results-card">
+    
+    <!-- Placeholder: When no analysis run yet -->
+    <div id="results-placeholder" {% if analysis %}style="display: none;"{% endif %} style="text-align: center; padding: 4rem 1.5rem;">
+      <div style="font-size: 3.5rem; margin-bottom: 1rem; opacity: 0.6;">🧠</div>
+      <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">AI Evaluation Ready</h3>
+      <p style="color: var(--text-secondary); font-size: 0.88rem; max-width: 380px; margin: 0 auto; line-height: 1.5;">
+        Select a job vacancy and upload candidate CVs to view structured match scores, skill comparisons, and ranked hiring fit.
+      </p>
+    </div>
+
+    <!-- ─── BATCH RESULTS: Ranked Candidate Leaderboard ─────────────────── -->
+    <div id="batch-results-display" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div>
+          <h3 style="margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>🏆</span> Candidate Rankings & Match Fit
+          </h3>
+          <div id="batch-job-subtitle" style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 0.25rem;">
+            <!-- Target Job -->
+          </div>
+        </div>
+        <span id="batch-completed-badge" class="badge badge-active" style="font-size: 0.78rem; font-weight: 700;">
+          All Completed
+        </span>
+      </div>
+
+      <!-- Quick Comparison Stats -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.85rem; margin-bottom: 1.5rem;">
+        <div class="analysis-section-card" style="margin-bottom: 0; text-align: center; padding: 0.85rem 0.5rem;">
+          <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Evaluated</div>
+          <div id="stat-total-evaluated" style="font-size: 1.6rem; font-weight: 800; color: var(--accent-primary);">0</div>
+        </div>
+        <div class="analysis-section-card" style="margin-bottom: 0; text-align: center; padding: 0.85rem 0.5rem;">
+          <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Top Score</div>
+          <div id="stat-top-score" style="font-size: 1.6rem; font-weight: 800; color: var(--success);">0%</div>
+        </div>
+        <div class="analysis-section-card" style="margin-bottom: 0; text-align: center; padding: 0.85rem 0.5rem;">
+          <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Strong Fits</div>
+          <div id="stat-strong-fits" style="font-size: 1.6rem; font-weight: 800; color: #34d399;">0</div>
+        </div>
+      </div>
+
+      <!-- Leaderboard Table -->
+      <div style="overflow-x: auto; border: 1px solid var(--border-glass); border-radius: var(--radius-md); background: rgba(0,0,0,0.15); margin-bottom: 1.25rem;">
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th style="width: 50px;">Rank</th>
+              <th>Candidate & File</th>
+              <th style="width: 130px;">Match Score</th>
+              <th>Recommendation</th>
+              <th>Experience</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="batch-leaderboard-tbody">
+            <!-- Dynamically populated rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─── SINGLE RESULT: Full Detailed AI Evaluation ───────────────────── -->
+    <div id="results-display" {% if not analysis %}style="display: none;"{% endif %}>
+      
+      <!-- Back to Leaderboard Button (Visible when navigated from batch results) -->
+      <div id="back-to-batch-banner" style="display: none; margin-bottom: 1.25rem;">
+        <button type="button" onclick="returnToLeaderboard()" class="btn btn-secondary" style="font-size: 0.82rem; padding: 0.4rem 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+          &larr; Back to Candidate Rankings
+        </button>
+      </div>
+
+      <!-- Top Metrics Header -->
+      <div style="text-align: center; margin-bottom: 1.75rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 1.5rem;">
+        <div id="res-score-radial" class="cv-score-radial {% if analysis %}{% if analysis.match_score >= 75 %}{% elif analysis.match_score >= 50 %}moderate{% else %}weak{% endif %}{% endif %}">
+          <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Match Score</span>
+          <span id="res-score-number" style="font-size: 2.2rem; font-weight: 800; color: #fff;">
+            {% if analysis %}{{ analysis.match_score }}%{% else %}0%{% endif %}
+          </span>
+        </div>
+
+        <div id="res-recommendation" class="rec-badge-pill{% if analysis %}{% if analysis.match_score < 50 %} weak{% elif analysis.match_score < 75 %} moderate{% endif %}{% endif %}">
+          {% if analysis %}{{ analysis.recommendation }}{% else %}Strong Match{% endif %}
+        </div>
+        <div id="res-target-job" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">
+          {% if analysis %}Target: <strong>{{ analysis.candidate_cv.job_vacancy.title }}</strong>{% endif %}
+        </div>
+      </div>
+
+      <!-- Skills Matrix: Matched vs Missing -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+        <!-- Matched Skills -->
+        <div class="analysis-section-card">
+          <div style="font-size: 0.85rem; font-weight: 700; color: #34d399; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.35rem;">
+            <span>✓</span> Matched Skills
+          </div>
+          <div id="res-matched-skills" style="display: flex; flex-wrap: wrap;">
+            {% if analysis %}
+              {% for s in analysis.matched_skills.all %}
+                <span class="skill-pill-matched">
+                  {{ s.skill }} &bull; <small style="opacity: 0.85;">{{ s.level }}</small>
+                </span>
+              {% empty %}
+                <span style="font-size: 0.8rem; color: var(--text-muted);">No direct skill matches found.</span>
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Missing Skills -->
+        <div class="analysis-section-card">
+          <div style="font-size: 0.85rem; font-weight: 700; color: #f87171; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.35rem;">
+            <span>✗</span> Missing Skills
+          </div>
+          <div id="res-missing-skills" style="display: flex; flex-wrap: wrap;">
+            {% if analysis %}
+              {% for s in analysis.missing_skills.all %}
+                <span class="skill-pill-missing">{{ s.skill }}</span>
+              {% empty %}
+                <span style="font-size: 0.8rem; color: #34d399;">All key required skills demonstrated!</span>
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Experience & Education Evaluation -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+        <!-- Experience Card -->
+        <div class="analysis-section-card">
+          <div style="font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
+            <span>⏱️ Relevant Experience</span>
+            <span id="res-exp-status" class="badge {% if analysis and analysis.experience_meets_requirement %}badge-active{% else %}badge-rejected{% endif %}" style="font-size: 0.7rem;">
+              {% if analysis %}{% if analysis.experience_meets_requirement %}Meets Req{% else %}Below Req{% endif %}{% endif %}
+            </span>
+          </div>
+          <div id="res-exp-detail" style="font-size: 0.85rem; color: var(--text-secondary);">
+            {% if analysis %}
+              Estimated <strong>{{ analysis.experience_relevant_years }} years</strong> relevant experience.
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Education Card -->
+        <div class="analysis-section-card">
+          <div style="font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
+            <span>🎓 Education & Degrees</span>
+            <span id="res-edu-status" class="badge {% if analysis and analysis.education_meets_requirement %}badge-active{% else %}badge-rejected{% endif %}" style="font-size: 0.7rem;">
+              {% if analysis %}{% if analysis.education_meets_requirement %}Meets Req{% else %}Review Needed{% endif %}{% endif %}
+            </span>
+          </div>
+          <div id="res-edu-detail" style="font-size: 0.85rem; color: var(--text-secondary);">
+            {% if analysis %}
+              {{ analysis.education_qualification|default:"Educational background evaluated against requirements." }}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Strengths & Missing Requirements -->
+      <div class="analysis-section-card">
+        <div style="font-size: 0.85rem; font-weight: 700; color: var(--accent-primary); margin-bottom: 0.5rem;">
+          ✨ Key Candidate Strengths
+        </div>
+        <ul id="res-strengths" style="margin: 0; padding-left: 1.25rem; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+          {% if analysis %}
+            {% for str in analysis.strengths %}
+              <li>{{ str }}</li>
+            {% empty %}
+              <li>Basic candidate technical foundation observed.</li>
+            {% endfor %}
+          {% endif %}
+        </ul>
+      </div>
+
+      <div class="analysis-section-card">
+        <div style="font-size: 0.85rem; font-weight: 700; color: #f87171; margin-bottom: 0.5rem;">
+          ⚠️ Missing Requirements & Gaps
+        </div>
+        <ul id="res-missing-reqs" style="margin: 0; padding-left: 1.25rem; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+          {% if analysis %}
+            {% for mr in analysis.missing_requirements %}
+              <li>{{ mr }}</li>
+            {% empty %}
+              <li style="color: #34d399;">No major qualification gaps identified.</li>
+            {% endfor %}
+          {% endif %}
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let currentMode = 'single';
+  let batchQueue = [];
+  let cachedBatchResults = [];
+
+  // ─── Mode Switching ────────────────────────────────────────────────────────
+  function switchUploadMode(mode) {
+    currentMode = mode;
+    const tabSingle = document.getElementById('tab-single');
+    const tabBatch = document.getElementById('tab-batch');
+    const singleContainer = document.getElementById('single-mode-container');
+    const batchContainer = document.getElementById('batch-mode-container');
+
+    if (mode === 'single') {
+      tabSingle.classList.add('active');
+      tabBatch.classList.remove('active');
+      singleContainer.style.display = 'block';
+      batchContainer.style.display = 'none';
+      if (cachedBatchResults.length === 0) {
+        document.getElementById('batch-results-display').style.display = 'none';
+      }
+    } else {
+      tabBatch.classList.add('active');
+      tabSingle.classList.remove('active');
+      singleContainer.style.display = 'none';
+      batchContainer.style.display = 'block';
+      if (cachedBatchResults.length > 0) {
+        document.getElementById('results-placeholder').style.display = 'none';
+        document.getElementById('results-display').style.display = 'none';
+        document.getElementById('batch-results-display').style.display = 'block';
+      }
+    }
+  }
+
+  // ─── Single File Selection ────────────────────────────────────────────────
+  function handleSingleFileSelected(input) {
+    const label = document.getElementById('upload-label');
+    if (input.files && input.files[0]) {
+      label.innerHTML = `📄 <strong>${escapeHtml(input.files[0].name)}</strong> (${(input.files[0].size / 1024).toFixed(1)} KB)`;
+    }
+  }
+
+  // ─── Single Form Submit (AJAX) ───────────────────────────────────────────
+  document.getElementById('cv-analysis-form')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const vacancyId = document.getElementById('id_job_vacancy').value;
+    if (!vacancyId) {
+      alert('Please select a target job vacancy.');
+      return;
+    }
+
+    const formData = new FormData(this);
+    // Ensure vacancy is attached from shared selector
+    formData.set('job_vacancy', vacancyId);
+
+    const btn = document.getElementById('btn-analyze');
+    const btnText = document.getElementById('btn-text');
+    const btnSpinner = document.getElementById('btn-spinner');
+    
+    btn.disabled = true;
+    btnText.textContent = 'Extracting & Analyzing with AI...';
+    btnSpinner.style.display = 'inline-block';
+
+    fetch('/api/hr/cv-analysis/', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      btn.disabled = false;
+      btnText.textContent = '🚀 Run AI CV Analysis';
+      btnSpinner.style.display = 'none';
+
+      if (!data.success) {
+        alert('Error: ' + (data.error || 'Failed to analyze CV.'));
+        return;
+      }
+
+      document.getElementById('batch-results-display').style.display = 'none';
+      document.getElementById('back-to-batch-banner').style.display = 'none';
+      renderAnalysisResult(data.result, data.job_title, data.candidate_name);
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btnText.textContent = '🚀 Run AI CV Analysis';
+      btnSpinner.style.display = 'none';
+      alert('Network error during AI analysis: ' + err.message);
+    });
+  });
+
+  // ─── Batch File Drag & Drop ──────────────────────────────────────────────
+  const batchDropzone = document.getElementById('batch-dropzone');
+  if (batchDropzone) {
+    ['dragenter', 'dragover'].forEach(eventName => {
+      batchDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        batchDropzone.classList.add('drag-over');
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      batchDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        batchDropzone.classList.remove('drag-over');
+      }, false);
+    });
+
+    batchDropzone.addEventListener('drop', (e) => {
+      if (e.dataTransfer && e.dataTransfer.files) {
+        handleBatchFiles(e.dataTransfer.files);
+      }
+    }, false);
+  }
+
+  // ─── Batch File Queue Operations ──────────────────────────────────────────
+  function handleBatchFiles(files) {
+    const allowed = ['.pdf', '.docx'];
+    const maxBytes = 5 * 1024 * 1024;
+    let addedCount = 0;
+
+    Array.from(files).forEach(f => {
+      const ext = '.' + f.name.split('.').pop().toLowerCase();
+      if (!allowed.includes(ext)) {
+        alert(`Skipped '${f.name}': Only PDF and DOCX formats are supported.`);
+        return;
+      }
+      if (f.size > maxBytes) {
+        alert(`Skipped '${f.name}': Exceeds 5MB size limit.`);
+        return;
+      }
+      // Check duplicate
+      if (batchQueue.some(item => item.name === f.name && item.size === f.size)) {
+        return;
+      }
+      batchQueue.push(f);
+      addedCount++;
+    });
+
+    renderBatchQueue();
+  }
+
+  function removeBatchFile(index) {
+    batchQueue.splice(index, 1);
+    renderBatchQueue();
+  }
+
+  function clearBatchQueue() {
+    batchQueue = [];
+    document.getElementById('id_batch_files').value = '';
+    renderBatchQueue();
+  }
+
+  function renderBatchQueue() {
+    const queueSection = document.getElementById('batch-queue-section');
+    const listEl = document.getElementById('batch-file-list');
+    const countLabel = document.getElementById('batch-count-label');
+    const btnText = document.getElementById('batch-btn-text');
+
+    if (batchQueue.length === 0) {
+      queueSection.style.display = 'none';
+      listEl.innerHTML = '';
+      return;
+    }
+
+    queueSection.style.display = 'block';
+    countLabel.textContent = `${batchQueue.length} CV${batchQueue.length > 1 ? 's' : ''} Ready for Analysis`;
+    btnText.textContent = `🚀 Run Batch AI Analysis (${batchQueue.length} CVs)`;
+
+    listEl.innerHTML = batchQueue.map((f, idx) => `
+      <div class="batch-file-item">
+        <div style="display: flex; align-items: center; gap: 0.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <span>📄</span>
+          <span style="font-weight: 600; color: var(--text-primary);">${escapeHtml(f.name)}</span>
+          <span style="color: var(--text-muted); font-size: 0.74rem;">(${(f.size / 1024).toFixed(1)} KB)</span>
+        </div>
+        <button type="button" onclick="removeBatchFile(${idx})" title="Remove" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 0.9rem; padding: 0 4px;">
+          &times;
+        </button>
+      </div>
+    `).join('');
+  }
+
+  // ─── Execute Batch AI Analysis ────────────────────────────────────────────
+  async function executeBatchAnalysis() {
+    const vacancySelect = document.getElementById('id_job_vacancy');
+    const vacancyId = vacancySelect.value;
+    const vacancyTitle = vacancySelect.options[vacancySelect.selectedIndex]?.text || 'Job Vacancy';
+
+    if (!vacancyId) {
+      alert('Please select a target job vacancy first.');
+      vacancySelect.focus();
+      return;
+    }
+
+    if (batchQueue.length === 0) {
+      alert('Please select at least one CV file to analyze.');
+      return;
+    }
+
+    const runBtn = document.getElementById('btn-run-batch');
+    const btnText = document.getElementById('batch-btn-text');
+    const btnSpinner = document.getElementById('batch-btn-spinner');
+    const progressContainer = document.getElementById('batch-progress-container');
+    const progressBar = document.getElementById('batch-progress-bar');
+    const progressPct = document.getElementById('batch-progress-pct');
+    const progressStatus = document.getElementById('batch-progress-status');
+    const progressFile = document.getElementById('batch-progress-file');
+
+    runBtn.disabled = true;
+    btnSpinner.style.display = 'inline-block';
+    progressContainer.style.display = 'block';
+
+    const total = batchQueue.length;
+    let completed = 0;
+    const results = [];
+    const errors = [];
+
+    for (let i = 0; i < total; i++) {
+      const file = batchQueue[i];
+      const pct = Math.round((i / total) * 100);
+      progressBar.style.width = pct + '%';
+      progressPct.textContent = pct + '%';
+      progressStatus.textContent = `Analyzing CV ${i + 1} of ${total}...`;
+      progressFile.textContent = `Evaluating: ${file.name}`;
+
+      const formData = new FormData();
+      formData.append('job_vacancy', vacancyId);
+      formData.append('cv_file', file);
+
+      try {
+        const response = await fetch('/api/hr/cv-analysis/', {
+          method: 'POST',
+          body: formData,
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          results.push({
+            analysis_id: data.analysis_id,
+            candidate_name: data.candidate_name,
+            file_name: file.name,
+            job_title: data.job_title,
+            match_score: data.match_score || data.result?.match_score || 0,
+            recommendation: data.recommendation || data.result?.recommendation || 'Moderate Match',
+            experience_years: data.experience_years || data.result?.experience?.relevant_years || 0,
+            experience_meets: data.experience_meets ?? data.result?.experience?.meets_requirement ?? false,
+            matched_skills_count: data.matched_skills_count || (data.result?.matched_skills?.length || 0),
+            result: data.result,
+          });
+        } else {
+          errors.push({ file_name: file.name, error: data.error || 'Failed to analyze' });
+        }
+      } catch (err) {
+        errors.push({ file_name: file.name, error: err.message });
+      }
+
+      completed++;
+    }
+
+    // Finished
+    progressBar.style.width = '100%';
+    progressPct.textContent = '100%';
+    progressStatus.textContent = `Batch Completed! (${results.length} processed, ${errors.length} failed)`;
+    progressFile.textContent = 'Ranking candidates by hiring fit...';
+
+    runBtn.disabled = false;
+    btnSpinner.style.display = 'none';
+
+    // Sort results by match_score descending
+    results.sort((a, b) => b.match_score - a.match_score);
+    cachedBatchResults = results;
+
+    // Display Leaderboard
+    renderBatchLeaderboard(results, vacancyTitle, errors);
+  }
+
+  // ─── Render Ranked Leaderboard ────────────────────────────────────────────
+  function renderBatchLeaderboard(results, jobTitle, errors) {
+    document.getElementById('results-placeholder').style.display = 'none';
+    document.getElementById('results-display').style.display = 'none';
+    const batchDisplay = document.getElementById('batch-results-display');
+    batchDisplay.style.display = 'block';
+
+    document.getElementById('batch-job-subtitle').innerHTML = `Target Vacancy: <strong>${escapeHtml(jobTitle)}</strong>`;
+    document.getElementById('stat-total-evaluated').textContent = results.length;
+
+    const topScore = results.length > 0 ? results[0].match_score : 0;
+    document.getElementById('stat-top-score').textContent = topScore + '%';
+
+    const strongFits = results.filter(r => r.recommendation === 'Strong Match').length;
+    document.getElementById('stat-strong-fits').textContent = strongFits;
+
+    const tbody = document.getElementById('batch-leaderboard-tbody');
+    tbody.innerHTML = '';
+
+    if (results.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No candidate CVs could be evaluated.</td></tr>`;
+      return;
+    }
+
+    results.forEach((item, index) => {
+      const rank = index + 1;
+      let rankBadgeHtml = '';
+      if (rank === 1) rankBadgeHtml = `<span class="rank-badge rank-badge-1" title="Rank 1">🥇</span>`;
+      else if (rank === 2) rankBadgeHtml = `<span class="rank-badge rank-badge-2" title="Rank 2">🥈</span>`;
+      else if (rank === 3) rankBadgeHtml = `<span class="rank-badge rank-badge-3" title="Rank 3">🥉</span>`;
+      else rankBadgeHtml = `<span class="rank-badge rank-badge-other">#${rank}</span>`;
+
+      let scoreColor = '#34d399';
+      let recBadge = '<span class="badge badge-active">Strong</span>';
+      if (item.match_score < 50) {
+        scoreColor = '#f87171';
+        recBadge = '<span class="badge badge-rejected">Weak</span>';
+      } else if (item.match_score < 75) {
+        scoreColor = '#fbbf24';
+        recBadge = '<span class="badge badge-pending">Moderate</span>';
+      }
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${rankBadgeHtml}</td>
+        <td>
+          <div style="font-weight: 700; color: var(--text-primary);">${escapeHtml(item.candidate_name)}</div>
+          <div style="font-size: 0.74rem; color: var(--text-muted);">${escapeHtml(item.file_name)}</div>
+        </td>
+        <td>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-weight: 800; color: ${scoreColor}; font-size: 0.95rem;">${item.match_score}%</span>
+            <div style="flex: 1; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden;">
+              <div style="height: 100%; width: ${item.match_score}%; background: ${scoreColor};"></div>
+            </div>
+          </div>
+        </td>
+        <td>${recBadge}</td>
+        <td>
+          <div style="font-size: 0.8rem;">
+            <strong>${item.experience_years} yrs</strong>
+            <span class="badge ${item.experience_meets ? 'badge-active' : 'badge-rejected'}" style="font-size: 0.65rem; margin-left: 0.25rem;">
+              ${item.experience_meets ? 'Meets Req' : 'Below'}
+            </span>
+          </div>
+        </td>
+        <td style="text-align: right;">
+          <button type="button" onclick="viewCandidateDetailFromBatch(${index})" class="btn btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem;">
+            👁️ Full Report
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Mobile scroll
+    if (window.innerWidth < 768) {
+      document.getElementById('results-card').scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  // ─── View Full Candidate Detail from Batch ────────────────────────────────
+  function viewCandidateDetailFromBatch(index) {
+    const candidate = cachedBatchResults[index];
+    if (!candidate) return;
+
+    document.getElementById('batch-results-display').style.display = 'none';
+    const detailDisplay = document.getElementById('results-display');
+    detailDisplay.style.display = 'block';
+
+    // Show Back Button
+    document.getElementById('back-to-batch-banner').style.display = 'block';
+
+    renderAnalysisResult(candidate.result, candidate.job_title, candidate.candidate_name);
+  }
+
+  function returnToLeaderboard() {
+    document.getElementById('results-display').style.display = 'none';
+    document.getElementById('batch-results-display').style.display = 'block';
+  }
+
+  // ─── Render Single Candidate Full Analysis ────────────────────────────────
+  function renderAnalysisResult(res, jobTitle, candidateName) {
+    document.getElementById('results-placeholder').style.display = 'none';
+    const display = document.getElementById('results-display');
+    display.style.display = 'block';
+
+    // 1. Score & Radial
+    const score = res.match_score || 0;
+    const radial = document.getElementById('res-score-radial');
+    const scoreNum = document.getElementById('res-score-number');
+    scoreNum.textContent = score + '%';
+
+    radial.className = 'cv-score-radial';
+    if (score >= 75) {
+      // default green
+    } else if (score >= 50) {
+      radial.classList.add('moderate');
+    } else {
+      radial.classList.add('weak');
+    }
+
+    // 2. Recommendation Pill
+    const recPill = document.getElementById('res-recommendation');
+    recPill.textContent = res.recommendation || 'Evaluated';
+    recPill.className = 'rec-badge-pill';
+    if (score >= 75) {
+      // default / strong
+    } else if (score >= 50) {
+      recPill.classList.add('moderate');
+    } else {
+      recPill.classList.add('weak');
+    }
+
+    document.getElementById('res-target-job').innerHTML = `Candidate: <strong>${escapeHtml(candidateName)}</strong> &bull; Target Job: <strong>${escapeHtml(jobTitle)}</strong>`;
+
+    // 3. Matched Skills
+    const matchedDiv = document.getElementById('res-matched-skills');
+    matchedDiv.innerHTML = '';
+    if (res.matched_skills && res.matched_skills.length > 0) {
+      res.matched_skills.forEach(s => {
+        const span = document.createElement('span');
+        span.className = 'skill-pill-matched';
+        span.innerHTML = `${escapeHtml(s.skill)} &bull; <small style="opacity: 0.85;">${escapeHtml(s.level)}</small>`;
+        matchedDiv.appendChild(span);
+      });
+    } else {
+      matchedDiv.innerHTML = '<span style="font-size: 0.8rem; color: var(--text-muted);">No direct skill matches found.</span>';
+    }
+
+    // 4. Missing Skills
+    const missingDiv = document.getElementById('res-missing-skills');
+    missingDiv.innerHTML = '';
+    if (res.missing_skills && res.missing_skills.length > 0) {
+      res.missing_skills.forEach(skill => {
+        const span = document.createElement('span');
+        span.className = 'skill-pill-missing';
+        span.textContent = skill;
+        missingDiv.appendChild(span);
+      });
+    } else {
+      missingDiv.innerHTML = '<span style="font-size: 0.8rem; color: #34d399;">All key required skills demonstrated!</span>';
+    }
+
+    // 5. Experience
+    const exp = res.experience || {};
+    const expStatus = document.getElementById('res-exp-status');
+    expStatus.className = `badge ${exp.meets_requirement ? 'badge-active' : 'badge-rejected'}`;
+    expStatus.textContent = exp.meets_requirement ? 'Meets Req' : 'Below Req';
+    document.getElementById('res-exp-detail').innerHTML = exp.analysis_summary || `Estimated <strong>${exp.relevant_years || 0} years</strong> relevant experience.`;
+
+    // 6. Education
+    const edu = res.education || {};
+    const eduStatus = document.getElementById('res-edu-status');
+    eduStatus.className = `badge ${edu.meets_requirement ? 'badge-active' : 'badge-rejected'}`;
+    eduStatus.textContent = edu.meets_requirement ? 'Meets Req' : 'Review Needed';
+    document.getElementById('res-edu-detail').textContent = edu.qualification || edu.analysis_summary || 'Educational qualifications evaluated.';
+
+    // 7. Strengths
+    const strengthsUl = document.getElementById('res-strengths');
+    strengthsUl.innerHTML = '';
+    if (res.strengths && res.strengths.length > 0) {
+      res.strengths.forEach(st => {
+        const li = document.createElement('li');
+        li.textContent = st;
+        strengthsUl.appendChild(li);
+      });
+    } else {
+      strengthsUl.innerHTML = '<li>Candidate skills demonstrated in application.</li>';
+    }
+
+    // 8. Missing Requirements
+    const missingReqsUl = document.getElementById('res-missing-reqs');
+    missingReqsUl.innerHTML = '';
+    if (res.missing_requirements && res.missing_requirements.length > 0) {
+      res.missing_requirements.forEach(mr => {
+        const li = document.createElement('li');
+        li.textContent = mr;
+        missingReqsUl.appendChild(li);
+      });
+    } else {
+      missingReqsUl.innerHTML = '<li style="color: #34d399;">No major qualification gaps identified.</li>';
+    }
+
+    // Scroll to results on mobile devices
+    if (window.innerWidth < 768) {
+      document.getElementById('results-card').scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+</script>
+{% endblock %}

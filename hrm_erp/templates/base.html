@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% if page_title %}{{ page_title }} | HRM ERP{% else %}HRM ERP Portal{% endif %}</title>
+  <meta name="description"
+    content="Premium Human Resource Management dashboard for ERP systems with role-based access controls.">
+  <meta name="author" content="Antigravity Team">
+
+  <!-- Styling -->
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- Sidebar component -->
+    {% include 'components/sidebar.html' %}
+
+    <div class="main-wrapper">
+      <!-- Navbar component -->
+      {% include 'components/navbar.html' %}
+
+      <!-- Messages/Alerts container -->
+      <main class="content-container">
+        {% include 'components/messages.html' %}
+
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="{% static 'js/theme-toggle.js' %}"></script>
+  <script src="{% static 'js/sidebar.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+
+</html>

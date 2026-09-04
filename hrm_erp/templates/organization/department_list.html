@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Top Header actions -->
+<div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+  <a href="{% url 'organization:department_list' %}" class="btn btn-primary">Departments</a>
+  <a href="{% url 'organization:designation_list' %}" class="btn btn-secondary">Designations</a>
+  <a href="{% url 'organization:branch_list' %}" class="btn btn-secondary">Branches</a>
+</div>
+
+<div class="glass-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <h3 style="font-size: 1.25rem;">Departments</h3>
+    {% if is_admin or is_hr %}
+      <a href="{% url 'organization:department_create' %}" class="btn btn-primary">+ Create Department</a>
+    {% endif %}
+  </div>
+
+  <div class="table-container">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Department Name</th>
+          <th>Description</th>
+          {% if is_admin or is_hr %}
+            <th>Actions</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in departments %}
+          <tr>
+            <td style="font-weight: 600;">{{ d.name }}</td>
+            <td style="color: var(--text-secondary);">{{ d.description|default:"No description provided." }}</td>
+            {% if is_admin or is_hr %}
+              <td>
+                <div style="display: flex; gap: 0.5rem;">
+                  <a href="{% url 'organization:department_edit' d.id %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">Edit</a>
+                  <a href="{% url 'organization:department_delete' d.id %}" class="btn btn-danger" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">Delete</a>
+                </div>
+              </td>
+            {% endif %}
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="{% if is_admin or is_hr %}3{% else %}2{% endif %}" style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+              No departments registered.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 780px; margin: 0 auto;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 1rem;">
+    <div>
+      <h2 style="font-size: 1.35rem; margin-bottom: 0.25rem;">⚖️ Verify & Review Role Request</h2>
+      <p style="font-size: 0.85rem; color: var(--text-secondary);">Validate employee eligibility before granting elevated administrative or HR privileges.</p>
+    </div>
+    <div>
+      {% if role_req.status == 'pending' %}
+        <span class="badge" style="background: rgba(255, 193, 7, 0.2); color: #ffc107; border: 1px solid rgba(255, 193, 7, 0.4); font-size: 0.8rem; padding: 0.4rem 0.8rem;">⏳ Pending Review</span>
+      {% elif role_req.status == 'approved' %}
+        <span class="badge" style="background: rgba(40, 167, 69, 0.2); color: #28a745; border: 1px solid rgba(40, 167, 69, 0.4); font-size: 0.8rem; padding: 0.4rem 0.8rem;">✅ Approved</span>
+      {% elif role_req.status == 'rejected' %}
+        <span class="badge" style="background: rgba(220, 53, 69, 0.2); color: #dc3545; border: 1px solid rgba(220, 53, 69, 0.4); font-size: 0.8rem; padding: 0.4rem 0.8rem;">❌ Rejected</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Requester Profile Summary Card -->
+  <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-glass); border-radius: var(--radius-sm); padding: 1.25rem; margin-bottom: 1.5rem;">
+    <h3 style="font-size: 0.95rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem;">
+      Requester Information
+    </h3>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; font-size: 0.85rem;">
+      <div>
+        <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">FULL NAME & USERNAME</span>
+        <div style="font-weight: 700; font-size: 0.95rem; margin-top: 0.15rem;">{{ role_req.user.get_full_name|default:role_req.user.username }}</div>
+        <div style="font-size: 0.75rem; color: var(--accent-primary);">@{{ role_req.user.username }}</div>
+      </div>
+
+      <div>
+        <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">EMAIL ADDRESS</span>
+        <div style="font-weight: 600; margin-top: 0.15rem;">{{ role_req.user.email }}</div>
+      </div>
+
+      <div>
+        <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">CURRENT ASSIGNED ROLE</span>
+        <div style="margin-top: 0.2rem;">
+          {% for r in role_req.user.get_role_names %}
+            <span class="badge badge-active">{{ r }}</span>
+          {% empty %}
+            <span style="color: var(--text-muted);">Employee</span>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div>
+        <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">TARGET PRIVILEGE</span>
+        <div style="margin-top: 0.2rem;">
+          <span class="badge" style="background: rgba(79, 172, 254, 0.2); color: var(--accent-secondary); border: 1px solid rgba(79, 172, 254, 0.4); font-weight: 700; font-size: 0.85rem;">
+            ⭐ {{ role_req.requested_role.name }} Role
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reason Box -->
+    <div style="margin-top: 1.25rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem;">
+      <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
+        EMPLOYEE JUSTIFICATION / BUSINESS REASON:
+      </span>
+      <div style="margin-top: 0.35rem; background: rgba(255,255,255,0.03); padding: 0.85rem 1rem; border-radius: var(--radius-xs); border-left: 3px solid var(--accent-primary); line-height: 1.5; font-size: 0.9rem;">
+        {{ role_req.reason }}
+      </div>
+      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">
+        Submitted on: {{ role_req.created_at|date:"F d, Y \a\\t H:i" }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Review Form / Actions -->
+  <form method="POST">
+    {% csrf_token %}
+
+    <div style="background: rgba(79, 172, 254, 0.05); border: 1px solid rgba(79, 172, 254, 0.2); border-radius: var(--radius-sm); padding: 1.25rem; margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1rem; color: var(--accent-secondary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span>🔒</span> Admin Verification Decision
+      </h3>
+
+      <div class="form-group">
+        <label class="form-label" style="font-weight: 700;">Select Decision</label>
+        <div style="display: flex; gap: 1.5rem; margin-top: 0.5rem;">
+          {% for choice in form.action %}
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9rem; font-weight: 600;">
+              {{ choice.tag }}
+              <span>{{ choice.choice_label }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 1rem; margin-bottom: 0;">
+        <label for="id_admin_remarks" class="form-label">Admin Remarks / Feedback</label>
+        {{ form.admin_remarks }}
+        <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">
+          Optional feedback provided to the requester explaining the verification outcome.
+        </span>
+      </div>
+    </div>
+
+    <!-- Submit & Back Buttons -->
+    <div style="display: flex; gap: 1rem;">
+      <button type="submit" class="btn btn-primary" style="padding: 0.75rem 1.5rem;">
+        Submit Verification Decision
+      </button>
+      <a href="{% url 'accounts:admin_role_request_list' %}" class="btn btn-secondary" style="padding: 0.75rem 1.25rem;">
+        Cancel / Back to List
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

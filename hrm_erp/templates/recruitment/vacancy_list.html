@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <h2 style="font-size: 1.5rem; margin-bottom: 0.25rem;">💼 Job Vacancies</h2>
+    <p style="color: var(--text-secondary); font-size: 0.88rem;">Manage company job openings and vacancy profiles for candidate matching</p>
+  </div>
+  <div style="display: flex; gap: 0.5rem;">
+    <a href="{% url 'recruitment:cv_analysis' %}" class="btn btn-secondary">
+      🤖 AI CV Analysis
+    </a>
+    <a href="{% url 'recruitment:vacancy_create' %}" class="btn btn-primary">
+      + New Vacancy
+    </a>
+  </div>
+</div>
+
+<!-- Filters -->
+<div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem;">
+  <a href="{% url 'recruitment:vacancy_list' %}" class="btn btn-secondary {% if not status_filter %}btn-primary{% endif %}" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+    All Openings
+  </a>
+  <a href="?status=open" class="btn btn-secondary {% if status_filter == 'open' %}btn-primary{% endif %}" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+    Open Only
+  </a>
+  <a href="?status=closed" class="btn btn-secondary {% if status_filter == 'closed' %}btn-primary{% endif %}" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+    Closed
+  </a>
+  <a href="?status=draft" class="btn btn-secondary {% if status_filter == 'draft' %}btn-primary{% endif %}" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+    Drafts
+  </a>
+</div>
+
+<!-- Vacancies Table Card -->
+<div class="glass-card">
+  {% if vacancies %}
+    <div class="table-container">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Job Title</th>
+            <th>Department</th>
+            <th>Min Experience</th>
+            <th>Key Skills</th>
+            <th>Status</th>
+            <th>Posted Date</th>
+            <th style="text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for v in vacancies %}
+            <tr>
+              <td>
+                <div style="font-weight: 700;">{{ v.title }}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  {{ v.description }}
+                </div>
+              </td>
+              <td>{{ v.department.name|default:"General" }}</td>
+              <td>
+                <span class="badge" style="background: rgba(79, 172, 254, 0.15); color: var(--accent-primary);">
+                  {{ v.required_experience_years }}+ yrs
+                </span>
+              </td>
+              <td style="max-width: 220px; font-size: 0.8rem;">
+                <span style="color: var(--text-secondary);">{{ v.required_skills|truncatechars:50 }}</span>
+              </td>
+              <td>
+                {% if v.status == 'open' %}
+                  <span class="badge badge-active">Open</span>
+                {% elif v.status == 'closed' %}
+                  <span class="badge badge-rejected">Closed</span>
+                {% else %}
+                  <span class="badge" style="background: rgba(255,255,255,0.08);">Draft</span>
+                {% endif %}
+              </td>
+              <td style="font-size: 0.8rem; color: var(--text-muted);">
+                {{ v.created_at|date:"M d, Y" }}
+              </td>
+              <td style="text-align: right;">
+                <div style="display: flex; gap: 0.35rem; justify-content: flex-end;">
+                  <a href="{% url 'recruitment:cv_analysis' %}?vacancy_id={{ v.id }}" class="btn btn-secondary" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;" title="Match CVs">
+                    🤖 Match CV
+                  </a>
+                  <a href="{% url 'recruitment:vacancy_edit' v.id %}" class="btn btn-secondary" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;">
+                    ✏️ Edit
+                  </a>
+                  <a href="{% url 'recruitment:vacancy_delete' v.id %}" class="btn btn-secondary" style="padding: 0.35rem 0.65rem; font-size: 0.78rem; color: var(--danger);">
+                    🗑️
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if vacancies.has_other_pages %}
+      <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem;">
+        {% if vacancies.has_previous %}
+          <a href="?page={{ vacancies.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem;">&laquo; Previous</a>
+        {% endif %}
+        <span style="display: flex; align-items: center; font-size: 0.85rem; color: var(--text-secondary);">
+          Page {{ vacancies.number }} of {{ vacancies.paginator.num_pages }}
+        </span>
+        {% if vacancies.has_next %}
+          <a href="?page={{ vacancies.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem;">Next &raquo;</a>
+        {% endif %}
+      </div>
+    {% endif %}
+
+  {% else %}
+    {% include 'components/empty_state.html' with message="No job vacancies found. Click 'New Vacancy' to add one." %}
+  {% endif %}
+</div>
+{% endblock %}
